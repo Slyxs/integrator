@@ -1,0 +1,83 @@
+@import "tailwindcss";
+@plugin "daisyui" {
+  themes: light --default;
+}
+
+@plugin "daisyui/theme" {
+  name: "light";
+  default: true;
+  prefersdark: false;
+  color-scheme: light;
+
+  --color-base-100: #fffaf5;
+  --color-base-200: #f6ede3;
+  --color-base-300: #ead9c8;
+  --color-base-content: #3c1518;
+
+  --color-primary: #8b1a2b;
+  --color-primary-content: #fff8f0;
+  --color-secondary: #d4a574;
+  --color-secondary-content: #3c1518;
+  --color-accent: #5c3d2e;
+  --color-accent-content: #fff8f0;
+  --color-neutral: #3c1518;
+  --color-neutral-content: #fff8f0;
+  --color-info: #2563eb;
+  --color-info-content: #eff6ff;
+  --color-success: #2f855a;
+  --color-success-content: #f0fdf4;
+  --color-warning: #d97706;
+  --color-warning-content: #fff7ed;
+  --color-error: #b91c1c;
+  --color-error-content: #fef2f2;
+
+  --radius-selector: 1rem;
+  --radius-field: 0.75rem;
+  --radius-box: 1.25rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
+}
+
+@theme {
+  --color-primary: #8B1A2B;
+  --color-primary-dark: #6D1421;
+  --color-primary-light: #A52035;
+  --color-secondary: #D4A574;
+  --color-accent: #5C3D2E;
+  --color-cream: #FFF8F0;
+  --color-coffee: #3C1518;
+}
+
+html {
+  background-color: #FFF8F0;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background-color: #FFF8F0;
+  color: #3C1518;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* Print styles for receipt */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: white;
+  }
+  #receipt {
+    box-shadow: none;
+    border-radius: 0;
+  }
+}
+
