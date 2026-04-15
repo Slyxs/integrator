@@ -17,13 +17,23 @@ const categoryBadgeColors = [
 const formatCurrency = (amount) => `S/ ${amount.toFixed(2)}`;
 
 const Menu = () => {
+  // Lista completa de productos y categorías cargados desde la API
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+
+  // Categoría activa para filtrar — null significa "mostrar todos"
   const [activeCategory, setActiveCategory] = useState(null);
+
+  // addItem viene del contexto del carrito para agregar productos
   const { addItem } = useCart();
+
+  // user se usa para verificar si hay sesión antes de permitir agregar al carrito
   const { user } = useAuth();
+
+  // navigate se usa para redirigir al login si el usuario no está autenticado
   const navigate = useNavigate();
 
+  // Carga productos y categorías al montar el componente (el [] evita que se repita)
   useEffect(() => {
     const load = async () => {
       const [prods, cats] = await Promise.all([getProducts(), getCategories()]);
@@ -33,10 +43,12 @@ const Menu = () => {
     load();
   }, []);
 
+  // Si hay categoría activa, filtra la lista; si no, muestra todo
   const filtered = activeCategory
     ? products.filter(p => p.categoriaId === activeCategory)
     : products;
 
+  // Agrega un producto al carrito; si no hay sesión redirige al login
   const handleAdd = (product) => {
     if (!user) {
       toast.error('Inicia sesión para agregar al carrito');

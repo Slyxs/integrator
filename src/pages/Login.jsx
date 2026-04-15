@@ -5,19 +5,27 @@ import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const Login = () => {
+  // Campos del formulario sincronizados con lo que escribe el usuario
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  // login ejecuta la petición al servidor; loading viene del contexto
+  // para deshabilitar el botón mientras se espera respuesta
   const { login, loading } = useAuth();
+
+  // navigate redirige sin recargar la página
   const navigate = useNavigate();
 
+  // Se ejecuta al enviar el formulario
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // evita el comportamiento nativo del form
     try {
       const user = await login(email, password);
       toast.success(`Bienvenido, ${user.nombre}`);
+      // Redirige según el rol: los admin van al panel, el resto al menú
       navigate(user.rol === 'admin' ? '/admin/dashboard' : '/menu');
     } catch (err) {
-      toast.error(err.message);
+      toast.error(err.message); // muestra el error que devuelva la API
     }
   };
 

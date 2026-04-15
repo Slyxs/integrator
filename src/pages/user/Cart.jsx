@@ -17,49 +17,78 @@ const initialCardForm = {
 };
 
 const Cart = () => {
+  // items: productos en el carrito. removeItem, updateQuantity y clearCart
+  // son las acciones del contexto para modificarlo. total es la suma sin IGV.
   const { items, removeItem, updateQuantity, clearCart, total } = useCart();
+
+  // user se usa para prefill del nombre del cliente al confirmar el pedido
   const { user } = useAuth();
+
+  // navigate redirige al comprobante después de procesar el pago
   const navigate = useNavigate();
+
+  // Controla si se muestra el formulario de confirmación del pedido
   const [showCheckout, setShowCheckout] = useState(false);
+
+  // Datos del cliente que se envían junto a la venta
   const [clienteNombre, setClienteNombre] = useState('');
   const [clienteDocumento, setClienteDocumento] = useState('');
+
+  // Método de pago seleccionado: 'efectivo' o 'tarjeta'
   const [metodoPago, setMetodoPago] = useState('efectivo');
+
+  // Abre/cierra el modal para ingresar los datos de la tarjeta
   const [cardModalOpen, setCardModalOpen] = useState(false);
+
+  // cardForm guarda lo que el usuario escribe en el modal de tarjeta
+  // cardDetails guarda el resumen ya validado (últimos 4 dígitos, fecha, etc.)
   const [cardForm, setCardForm] = useState(initialCardForm);
   const [cardDetails, setCardDetails] = useState(null);
+
+  // Desactiva el botón de pagar mientras se procesa la venta en el servidor
   const [processing, setProcessing] = useState(false);
 
+  // Cálculo del IGV (18%) y total final sobre el subtotal del carrito
   const igv = total * 0.18;
   const totalConIgv = total + igv;
 
+  // Cambia el método de pago y abre el modal de tarjeta si el usuario elige esa opción
   const handleMetodoPagoChange = (event) => {
     const { value } = event.target;
     setMetodoPago(value);
 
+    // Si elige tarjeta, abre el modal para que ingrese los datos inmediatamente
     if (value === 'tarjeta') {
       setCardModalOpen(true);
     }
   };
 
+  // Actualiza un campo del formulario de tarjeta aplicando formato según el tipo
   const handleCardFieldChange = (field, value) => {
     let nextValue = value;
 
+    // Solo dígitos, máximo 16 caracteres
     if (field === 'number') {
       nextValue = value.replace(/\D/g, '').slice(0, 16);
     }
 
+    // Solo dígitos, máximo 4 caracteres
     if (field === 'cvv') {
       nextValue = value.replace(/\D/g, '').slice(0, 4);
     }
 
+    // Formatea automáticamente como MM/YY mientras el usuario escribe
     if (field === 'expiry') {
       const digits = value.replace(/\D/g, '').slice(0, 4);
       nextValue = digits.length > 2 ? `${digits.slice(0, 2)}/${digits.slice(2)}` : digits;
     }
 
+    // Actualiza solo el campo modificado, dejando el resto igual
     setCardForm(prev => ({ ...prev, [field]: nextValue }));
   };
 
+  // Cierra el modal de tarjeta. Si el usuario lo cierra sin guardar datos,
+  // vuelve automáticamente a 'efectivo' para no dejar el pago en un estado inválido
   const closeCardModal = () => {
     if (!cardDetails) {
       setMetodoPago('efectivo');
@@ -68,9 +97,12 @@ const Cart = () => {
     setCardModalOpen(false);
   };
 
+  // Valida y guarda el resumen de la tarjeta cuando el usuario confirma el modal.
+  // Solo se guardan los últimos 4 dígitos del número, nunca el número completo.
   const handleSaveCardDetails = (e) => {
     e.preventDefault();
 
+    // reportValidity() activa los mensajes de error del navegador antes de continuar
     const form = e.currentTarget;
     if (!form.reportValidity()) {
       return;
@@ -78,7 +110,7 @@ const Cart = () => {
 
     setCardDetails({
       holderName: cardForm.holderName.trim(),
-      last4: cardForm.number.slice(-4),
+      last4: cardForm.number.slice(-4), // solo se muestra al usuario como referencia
       expiry: cardForm.expiry,
       installments: cardForm.installments,
     });
@@ -86,16 +118,19 @@ const Cart = () => {
     toast.success('Tarjeta registrada para esta compra');
   };
 
+  // Envía la venta al servidor con todos los datos del carrito y del cliente.
+  // Antes de hacer la petición verifica que, si se eligió tarjeta, los datos estén cargados.
   const handleCheckout = async (e) => {
     e.preventDefault();
 
+    // Guarda al usuario de confirmar sin haber llenado los datos de la tarjeta
     if (metodoPago === 'tarjeta' && !cardDetails) {
       toast.error('Completa los datos de la tarjeta para continuar');
       setCardModalOpen(true);
       return;
     }
 
-    setProcessing(true);
+    setProcessing(true); // bloquea el botón para evitar envíos duplicados
     try {
       const sale = await createSale({
         clienteNombre: clienteNombre || 'Consumidor Final',

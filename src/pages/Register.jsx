@@ -6,17 +6,26 @@ import { createUser } from '../services/api';
 import toast from 'react-hot-toast';
 
 const Register = () => {
+  // Campos del formulario — cada useState guarda lo que el usuario escribe en tiempo real
   const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState(''); // se usa solo para validar, no se envía a la API
+
+  // Controla el estado de carga mientras se espera respuesta del servidor
   const [loading, setLoading] = useState(false);
+
+  // login viene del contexto de autenticación: hace el inicio de sesión automático post-registro
   const { login } = useAuth();
+
+  // navigate permite redirigir al usuario a otra página sin recargar el sitio
   const navigate = useNavigate();
 
+  // Se ejecuta cuando el usuario envía el formulario
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // evita que la página se recargue al hacer submit
 
+    // Validación local antes de llamar a la API — ahorra una petición innecesaria
     if (password !== confirmPassword) {
       toast.error('Las contraseñas no coinciden');
       return;
@@ -27,17 +36,19 @@ const Register = () => {
       return;
     }
 
-    setLoading(true);
+    setLoading(true); // activa el indicador de carga en el botón
     try {
+      // Crea el usuario en la base de datos con rol "usuario" por defecto
       await createUser({ nombre, email, password, rol: 'usuario' });
-      // Auto-login después del registro
+
+      // Después del registro hace login automático para no obligar al usuario a volver a ingresar sus datos
       const user = await login(email, password);
       toast.success(`¡Bienvenido, ${user.nombre}!`);
-      navigate('/menu');
+      navigate('/menu'); // lleva al menú directamente
     } catch (err) {
-      toast.error(err.message);
+      toast.error(err.message); // muestra el mensaje de error que devuelva la API
     } finally {
-      setLoading(false);
+      setLoading(false); // siempre desactiva el loading, haya error o no
     }
   };
 

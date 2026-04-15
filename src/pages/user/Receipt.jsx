@@ -6,10 +6,17 @@ import { getSaleById } from '../../services/api';
 const formatCurrency = (amount) => `S/ ${amount.toFixed(2)}`;
 
 const Receipt = () => {
+  // id viene de la URL (ej: /receipt/42) y se usa para buscar la venta
   const { id } = useParams();
+
+  // sale guarda los datos de la venta una vez cargada desde la API
   const [sale, setSale] = useState(null);
+
+  // loading muestra un spinner mientras se espera la respuesta del servidor
   const [loading, setLoading] = useState(true);
 
+  // Busca la venta por id al montar el componente
+  // El [id] como dependencia hace que se vuelva a buscar si el id cambia
   useEffect(() => {
     getSaleById(id).then(data => {
       setSale(data);
