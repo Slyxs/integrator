@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FiPlus, FiEdit2, FiTrash2, FiSearch, FiX } from 'react-icons/fi';
+import { Pencil, Plus, Search, Trash2, X } from 'lucide-react';
 import { getProducts, getCategories, createProduct, updateProduct, deleteProduct } from '../../services/api';
 import toast from 'react-hot-toast';
 
@@ -21,11 +21,12 @@ const Products = () => {
 
   useEffect(() => { loadData(); }, []);
 
-  const filtered = products.filter(p =>
-    p.nombre.toLowerCase().includes(search.toLowerCase())
+  const filtered = products.filter((product) =>
+    product.nombre.toLowerCase().includes(search.toLowerCase())
   );
 
-  const getCategoryName = (id) => categories.find(c => c.id === id)?.nombre || '-';
+  const getCategoryName = (id) =>
+    categories.find((category) => Number(category.id) === Number(id))?.nombre || '-';
 
   const openCreate = () => {
     setForm(emptyForm);
@@ -45,13 +46,13 @@ const Products = () => {
     setShowModal(true);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     const data = {
       ...form,
-      precio: parseFloat(form.precio),
-      categoriaId: parseInt(form.categoriaId),
-      stock: parseInt(form.stock),
+      precio: Number.parseFloat(form.precio),
+      categoriaId: Number.parseInt(form.categoriaId, 10),
+      stock: Number.parseInt(form.stock, 10),
     };
     try {
       if (editingId) {
@@ -70,159 +71,223 @@ const Products = () => {
 
   const handleDelete = async (id) => {
     if (!window.confirm('¿Estás seguro de eliminar este producto?')) return;
-    await deleteProduct(id);
-    toast.success('Producto eliminado');
-    loadData();
+    try {
+      await deleteProduct(id);
+      toast.success('Producto eliminado');
+      loadData();
+    } catch (err) {
+      toast.error(err.message);
+    }
   };
 
   return (
-    <div>
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Productos</h1>
-        <div className="flex gap-3 w-full sm:w-auto">
-          <div className="relative flex-1 sm:w-64">
-            <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+    <div className="space-y-5">
+      {/* Encabezado con filtros y acción principal */}
+      <section className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Productos</h1>
+          <p className="text-sm text-base-content/70">Gestiona inventario, precios y categorías del menú.</p>
+        </div>
+
+        <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto">
+          {/* Campo de búsqueda por nombre de producto */}
+          <label className="input input-bordered w-full sm:w-80">
+            <Search size={16} className="opacity-70" />
             <input
               type="text"
-              placeholder="Buscar..."
+              placeholder="Buscar producto"
               value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary outline-none"
+              onChange={(event) => setSearch(event.target.value)}
             />
-          </div>
+          </label>
+
+          {/* Botón para abrir el formulario de alta */}
           <button
+            type="button"
             onClick={openCreate}
-            className="bg-primary text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-primary-dark text-sm whitespace-nowrap"
+            className="btn btn-primary"
           >
-            <FiPlus /> Nuevo
+            <Plus size={16} />
+            Nuevo producto
           </button>
         </div>
-      </div>
+      </section>
 
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+      {/* Tabla principal con el listado de productos */}
+      <section className="card border border-base-300 bg-base-100 shadow-sm">
+        <div className="card-body p-0">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50">
+          <table className="table table-zebra">
+            <thead>
               <tr>
-                <th className="text-left px-4 py-3 text-gray-500 font-medium">Producto</th>
-                <th className="text-left px-4 py-3 text-gray-500 font-medium hidden md:table-cell">Categoría</th>
-                <th className="text-right px-4 py-3 text-gray-500 font-medium">Precio</th>
-                <th className="text-right px-4 py-3 text-gray-500 font-medium hidden sm:table-cell">Stock</th>
-                <th className="text-right px-4 py-3 text-gray-500 font-medium">Acciones</th>
+                <th>Producto</th>
+                <th className="hidden md:table-cell">Categoría</th>
+                <th className="text-right">Precio</th>
+                <th className="hidden sm:table-cell text-right">Stock</th>
+                <th className="text-right">Acciones</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map(p => (
-                <tr key={p.id} className="border-t hover:bg-gray-50">
-                  <td className="px-4 py-3">
-                    <p className="font-medium">{p.nombre}</p>
-                    <p className="text-xs text-gray-500 md:hidden">{getCategoryName(p.categoriaId)}</p>
+              {filtered.map((product) => (
+                <tr key={product.id}>
+                  <td>
+                    <div className="font-medium">{product.nombre}</div>
+                    <div className="text-xs text-base-content/60 md:hidden">{getCategoryName(product.categoriaId)}</div>
                   </td>
-                  <td className="px-4 py-3 hidden md:table-cell">{getCategoryName(p.categoriaId)}</td>
-                  <td className="px-4 py-3 text-right">${p.precio.toFixed(2)}</td>
-                  <td className="px-4 py-3 text-right hidden sm:table-cell">
-                    <span className={`px-2 py-0.5 rounded-full text-xs ${p.stock > 10 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                      {p.stock}
+                  <td className="hidden md:table-cell">{getCategoryName(product.categoriaId)}</td>
+                  <td className="text-right font-medium">${product.precio.toFixed(2)}</td>
+                  <td className="hidden text-right sm:table-cell">
+                    <span className={`badge badge-sm ${product.stock > 10 ? 'badge-success' : 'badge-warning'}`}>
+                      {product.stock}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-right">
-                    <button onClick={() => openEdit(p)} className="text-blue-500 hover:text-blue-700 mr-2">
-                      <FiEdit2 />
-                    </button>
-                    <button onClick={() => handleDelete(p.id)} className="text-red-500 hover:text-red-700">
-                      <FiTrash2 />
-                    </button>
+                  <td className="text-right">
+                    <div className="join">
+                      <button
+                        type="button"
+                        onClick={() => openEdit(product)}
+                        className="btn btn-ghost btn-sm join-item"
+                        aria-label={`Editar ${product.nombre}`}
+                      >
+                        <Pencil size={16} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(product.id)}
+                        className="btn btn-ghost btn-sm join-item text-error"
+                        aria-label={`Eliminar ${product.nombre}`}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
+
+              {/* Mensaje vacío cuando no hay coincidencias */}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan="5" className="text-center py-8 text-gray-500">No se encontraron productos</td>
+                  <td colSpan="5" className="text-center text-base-content/60">
+                    No se encontraron productos.
+                  </td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
-      </div>
+        </div>
+      </section>
 
-      {/* Modal */}
+      {/* Modal de creación/edición de productos */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl w-full max-w-lg p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-bold">{editingId ? 'Editar' : 'Nuevo'} Producto</h2>
-              <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700">
-                <FiX size={20} />
+        <div className="modal modal-open">
+          <div className="modal-box max-w-2xl">
+            {/* Encabezado del modal */}
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-bold">{editingId ? 'Editar producto' : 'Nuevo producto'}</h2>
+                <p className="text-sm text-base-content/70">
+                  {editingId
+                    ? 'Actualiza los datos del producto seleccionado.'
+                    : 'Completa la información para registrar un nuevo producto.'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowModal(false)}
+                className="btn btn-ghost btn-sm btn-circle"
+                aria-label="Cerrar formulario"
+              >
+                <X size={18} />
               </button>
             </div>
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+
+            {/* Formulario principal del producto */}
+            <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+              {/* Campo: nombre del producto */}
+              <fieldset className="fieldset">
+                <legend className="fieldset-legend">Nombre *</legend>
                 <input
                   required
                   value={form.nombre}
-                  onChange={e => setForm({ ...form, nombre: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary outline-none"
+                  onChange={(event) => setForm({ ...form, nombre: event.target.value })}
+                  className="input input-bordered w-full"
+                  placeholder="Ej. Café Orgánico"
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+              </fieldset>
+
+              {/* Campo: descripción comercial */}
+              <fieldset className="fieldset">
+                <legend className="fieldset-legend">Descripción</legend>
                 <textarea
                   value={form.descripcion}
-                  onChange={e => setForm({ ...form, descripcion: e.target.value })}
-                  rows="2"
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary outline-none"
+                  onChange={(event) => setForm({ ...form, descripcion: event.target.value })}
+                  rows="3"
+                  className="textarea textarea-bordered w-full"
+                  placeholder="Detalles para mostrar al cliente"
                 />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Precio *</label>
+              </fieldset>
+
+              {/* Grupo: precio y stock */}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <fieldset className="fieldset">
+                  <legend className="fieldset-legend">Precio *</legend>
                   <input
                     required
                     type="number"
                     step="0.01"
                     min="0"
                     value={form.precio}
-                    onChange={e => setForm({ ...form, precio: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary outline-none"
+                    onChange={(event) => setForm({ ...form, precio: event.target.value })}
+                    className="input input-bordered w-full"
                   />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Stock *</label>
+                </fieldset>
+
+                <fieldset className="fieldset">
+                  <legend className="fieldset-legend">Stock *</legend>
                   <input
                     required
                     type="number"
                     min="0"
                     value={form.stock}
-                    onChange={e => setForm({ ...form, stock: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary outline-none"
+                    onChange={(event) => setForm({ ...form, stock: event.target.value })}
+                    className="input input-bordered w-full"
                   />
-                </div>
+                </fieldset>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Categoría *</label>
+
+              {/* Campo: categoría asociada */}
+              <fieldset className="fieldset">
+                <legend className="fieldset-legend">Categoría *</legend>
                 <select
                   required
                   value={form.categoriaId}
-                  onChange={e => setForm({ ...form, categoriaId: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary outline-none"
+                  onChange={(event) => setForm({ ...form, categoriaId: event.target.value })}
+                  className="select select-bordered w-full"
                 >
-                  <option value="">Seleccionar...</option>
-                  {categories.map(c => (
-                    <option key={c.id} value={c.id}>{c.nombre}</option>
+                  <option value="">Seleccionar categoría</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>{category.nombre}</option>
                   ))}
                 </select>
-              </div>
-              <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setShowModal(false)} className="flex-1 border py-2 rounded-lg text-sm hover:bg-gray-50">
+              </fieldset>
+
+              {/* Botones de acción del formulario */}
+              <div className="modal-action">
+                <button type="button" onClick={() => setShowModal(false)} className="btn btn-ghost">
                   Cancelar
                 </button>
-                <button type="submit" className="flex-1 bg-primary text-white py-2 rounded-lg text-sm hover:bg-primary-dark">
-                  {editingId ? 'Actualizar' : 'Crear'}
+                <button type="submit" className="btn btn-primary">
+                  {editingId ? 'Actualizar producto' : 'Crear producto'}
                 </button>
               </div>
             </form>
           </div>
+
+          {/* Capa de fondo para cerrar el modal */}
+          <form method="dialog" className="modal-backdrop">
+            <button type="button" onClick={() => setShowModal(false)} aria-label="Cerrar modal">Cerrar</button>
+          </form>
         </div>
       )}
     </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FiPlus, FiEdit2, FiTrash2, FiSearch, FiX } from 'react-icons/fi';
+import { Pencil, Plus, Search, Trash2, X } from 'lucide-react';
 import { getUsers, createUser, updateUser, deleteUser } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -23,8 +23,8 @@ const Clients = () => {
 
   useEffect(() => { loadUsers(); }, []);
 
-  const filtered = users.filter(u =>
-    `${u.nombre} ${u.email} ${u.rol}`.toLowerCase().includes(search.toLowerCase())
+  const filtered = users.filter((user) =>
+    `${user.nombre} ${user.email} ${user.rol}`.toLowerCase().includes(search.toLowerCase())
   );
 
   const openCreate = () => {
@@ -44,8 +44,8 @@ const Clients = () => {
     setShowModal(true);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     try {
       if (editingId) {
         const data = { nombre: form.nombre, email: form.email, rol: form.rol };
@@ -83,158 +83,215 @@ const Clients = () => {
   };
 
   return (
-    <div>
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Usuarios</h1>
-        <div className="flex gap-3 w-full sm:w-auto">
-          <div className="relative flex-1 sm:w-64">
-            <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+    <div className="space-y-5">
+      {/* Encabezado con búsqueda y alta de usuarios */}
+      <section className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Usuarios</h1>
+          <p className="text-sm text-base-content/70">Administra cuentas, roles y credenciales del sistema.</p>
+        </div>
+
+        <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto">
+          {/* Campo para filtrar por nombre, correo o rol */}
+          <label className="input input-bordered w-full sm:w-80">
+            <Search size={16} className="opacity-70" />
             <input
               type="text"
-              placeholder="Buscar..."
+              placeholder="Buscar usuario"
               value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary outline-none"
+              onChange={(event) => setSearch(event.target.value)}
             />
-          </div>
+          </label>
+
+          {/* Botón para abrir el formulario de nuevo usuario */}
           <button
+            type="button"
             onClick={openCreate}
-            className="bg-primary text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-primary-dark text-sm whitespace-nowrap"
+            className="btn btn-primary"
           >
-            <FiPlus /> Nuevo
+            <Plus size={16} />
+            Nuevo usuario
           </button>
         </div>
-      </div>
+      </section>
 
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+      {/* Tabla con usuarios registrados */}
+      <section className="card border border-base-300 bg-base-100 shadow-sm">
+        <div className="card-body p-0">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50">
+          <table className="table table-zebra">
+            <thead>
               <tr>
-                <th className="text-left px-4 py-3 text-gray-500 font-medium">Nombre</th>
-                <th className="text-left px-4 py-3 text-gray-500 font-medium">Email</th>
-                <th className="text-left px-4 py-3 text-gray-500 font-medium hidden md:table-cell">Rol</th>
-                <th className="text-right px-4 py-3 text-gray-500 font-medium">Acciones</th>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th className="hidden md:table-cell">Rol</th>
+                <th className="text-right">Acciones</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map(u => (
-                <tr key={u.id} className="border-t hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium">
+              {filtered.map((user) => (
+                <tr key={user.id}>
+                  <td className="font-medium">
                     <div className="flex items-center gap-2">
                       <div className="avatar avatar-placeholder shrink-0">
                         <div className="bg-primary text-primary-content w-8 rounded-full">
                           <span className="text-xs leading-none">
-                            {u.nombre?.charAt(0).toUpperCase()}
+                            {user.nombre?.charAt(0).toUpperCase()}
                           </span>
                         </div>
                       </div>
                       <div>
-                        <div>{u.nombre}</div>
-                        <div className="text-xs text-gray-400 md:hidden">{rolLabels[u.rol] || u.rol}</div>
+                        <div>{user.nombre}</div>
+                        <div className="text-xs text-base-content/60 md:hidden">{rolLabels[user.rol] || user.rol}</div>
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-3">{u.email}</td>
-                  <td className="px-4 py-3 hidden md:table-cell">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                      u.rol === 'admin'
-                        ? 'bg-purple-100 text-purple-700'
-                        : 'bg-blue-100 text-blue-700'
+                  <td>{user.email}</td>
+                  <td className="hidden md:table-cell">
+                    <span className={`badge badge-sm ${
+                      user.rol === 'admin'
+                        ? 'badge-secondary'
+                        : 'badge-info'
                     }`}>
-                      {rolLabels[u.rol] || u.rol}
+                      {rolLabels[user.rol] || user.rol}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-right">
-                    <button onClick={() => openEdit(u)} className="text-blue-500 hover:text-blue-700 mr-2">
-                      <FiEdit2 />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(u.id)}
-                      className={`text-red-500 hover:text-red-700 ${u.id === currentUser?.id ? 'opacity-30 cursor-not-allowed' : ''}`}
-                      disabled={u.id === currentUser?.id}
-                    >
-                      <FiTrash2 />
-                    </button>
+                  <td className="text-right">
+                    <div className="join">
+                      <button
+                        type="button"
+                        onClick={() => openEdit(user)}
+                        className="btn btn-ghost btn-sm join-item"
+                        aria-label={`Editar ${user.nombre}`}
+                      >
+                        <Pencil size={16} />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(user.id)}
+                        className={`btn btn-ghost btn-sm join-item text-error ${user.id === currentUser?.id ? 'btn-disabled opacity-40' : ''}`}
+                        disabled={user.id === currentUser?.id}
+                        aria-label={`Eliminar ${user.nombre}`}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
+
+              {/* Mensaje vacío si no hay resultados de búsqueda */}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan="4" className="text-center py-8 text-gray-500">No se encontraron usuarios</td>
+                  <td colSpan="4" className="text-center text-base-content/60">
+                    No se encontraron usuarios.
+                  </td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
-      </div>
+        </div>
+      </section>
 
-      {/* Modal */}
+      {/* Modal para crear o editar usuarios */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl w-full max-w-lg p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-bold">{editingId ? 'Editar' : 'Nuevo'} Usuario</h2>
-              <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700">
-                <FiX size={20} />
+        <div className="modal modal-open">
+          <div className="modal-box max-w-2xl">
+            {/* Encabezado del modal */}
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-bold">{editingId ? 'Editar usuario' : 'Nuevo usuario'}</h2>
+                <p className="text-sm text-base-content/70">
+                  {editingId
+                    ? 'Modifica datos, correo o rol del usuario seleccionado.'
+                    : 'Completa los campos para registrar una nueva cuenta.'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowModal(false)}
+                className="btn btn-ghost btn-sm btn-circle"
+                aria-label="Cerrar formulario"
+              >
+                <X size={18} />
               </button>
             </div>
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+
+            {/* Formulario de datos del usuario */}
+            <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+              {/* Campo: nombre completo */}
+              <fieldset className="fieldset">
+                <legend className="fieldset-legend">Nombre *</legend>
                 <input
                   required
                   value={form.nombre}
-                  onChange={e => setForm({ ...form, nombre: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary outline-none"
+                  onChange={(event) => setForm({ ...form, nombre: event.target.value })}
+                  className="input input-bordered w-full"
+                  placeholder="Ej. Ana Pérez"
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+              </fieldset>
+
+              {/* Campo: correo electrónico */}
+              <fieldset className="fieldset">
+                <legend className="fieldset-legend">Email *</legend>
                 <input
                   type="email"
                   required
                   value={form.email}
-                  onChange={e => setForm({ ...form, email: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary outline-none"
+                  onChange={(event) => setForm({ ...form, email: event.target.value })}
+                  className="input input-bordered w-full"
+                  placeholder="correo@ejemplo.com"
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Contraseña {editingId ? '(dejar vacío para no cambiar)' : '*'}
-                </label>
+              </fieldset>
+
+              {/* Campo: contraseña (obligatoria en creación) */}
+              <fieldset className="fieldset">
+                <legend className="fieldset-legend">
+                  Contraseña {editingId ? '(déjala vacía para mantener la actual)' : '*'}
+                </legend>
                 <input
                   type="password"
                   value={form.password}
-                  onChange={e => setForm({ ...form, password: e.target.value })}
+                  onChange={(event) => setForm({ ...form, password: event.target.value })}
                   required={!editingId}
                   minLength={4}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary outline-none"
-                  placeholder={editingId ? '••••••••' : ''}
+                  className="input input-bordered w-full"
+                  placeholder={editingId ? '••••••••' : 'Mínimo 4 caracteres'}
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Rol *</label>
+              </fieldset>
+
+              {/* Campo: rol de acceso */}
+              <fieldset className="fieldset">
+                <legend className="fieldset-legend">Rol *</legend>
                 <select
                   required
                   value={form.rol}
-                  onChange={e => setForm({ ...form, rol: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary outline-none"
+                  onChange={(event) => setForm({ ...form, rol: event.target.value })}
+                  className="select select-bordered w-full"
                 >
                   <option value="usuario">Usuario</option>
                   <option value="admin">Administrador</option>
                 </select>
-              </div>
-              <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setShowModal(false)} className="flex-1 border py-2 rounded-lg text-sm hover:bg-gray-50">
+              </fieldset>
+
+              {/* Botones finales del formulario */}
+              <div className="modal-action">
+                <button type="button" onClick={() => setShowModal(false)} className="btn btn-ghost">
                   Cancelar
                 </button>
-                <button type="submit" className="flex-1 bg-primary text-white py-2 rounded-lg text-sm hover:bg-primary-dark">
-                  {editingId ? 'Actualizar' : 'Crear'}
+                <button type="submit" className="btn btn-primary">
+                  {editingId ? 'Actualizar usuario' : 'Crear usuario'}
                 </button>
               </div>
             </form>
           </div>
+
+          {/* Fondo del modal para cierre por clic externo */}
+          <form method="dialog" className="modal-backdrop">
+            <button type="button" onClick={() => setShowModal(false)} aria-label="Cerrar modal">Cerrar</button>
+          </form>
         </div>
       )}
     </div>

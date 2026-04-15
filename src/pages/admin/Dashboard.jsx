@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import { FiUsers, FiPackage, FiFileText, FiDollarSign } from 'react-icons/fi';
+import { DollarSign, Package, ReceiptText, Users } from 'lucide-react';
 import { getUsers, getProducts, getSales } from '../../services/api';
+
+const formatCurrency = (amount) => `$${amount.toFixed(2)}`;
 
 const Dashboard = () => {
   const [stats, setStats] = useState({ clients: 0, products: 0, sales: 0, revenue: 0 });
@@ -25,59 +27,82 @@ const Dashboard = () => {
   }, []);
 
   const cards = [
-    { label: 'Usuarios', value: stats.clients, icon: FiUsers, color: 'bg-blue-500' },
-    { label: 'Productos', value: stats.products, icon: FiPackage, color: 'bg-green-500' },
-    { label: 'Ventas', value: stats.sales, icon: FiFileText, color: 'bg-purple-500' },
-    { label: 'Ingresos', value: `$${stats.revenue.toFixed(2)}`, icon: FiDollarSign, color: 'bg-primary' },
+    { label: 'Usuarios', value: stats.clients, icon: Users, tone: 'bg-info/10 text-info' },
+    { label: 'Productos', value: stats.products, icon: Package, tone: 'bg-success/10 text-success' },
+    { label: 'Ventas', value: stats.sales, icon: ReceiptText, tone: 'bg-secondary/10 text-secondary' },
+    { label: 'Ingresos', value: formatCurrency(stats.revenue), icon: DollarSign, tone: 'bg-primary/10 text-primary' },
   ];
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Dashboard</h1>
+    <div className="space-y-6">
+      {/* Encabezado general del panel */}
+      <section className="space-y-1">
+        <h1 className="text-3xl font-bold">Panel general</h1>
+        <p className="text-sm text-base-content/70">Resumen rápido de usuarios, productos, ventas e ingresos.</p>
+      </section>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {cards.map(({ label, value, icon: Icon, color }) => (
-          <div key={label} className="bg-white rounded-xl shadow-sm p-5 flex items-center gap-4">
-            <div className={`${color} w-12 h-12 rounded-lg flex items-center justify-center text-white`}>
-              <Icon size={22} />
+      {/* Tarjetas de indicadores clave */}
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {cards.map(({ label, value, icon: Icon, tone }) => (
+          <article key={label} className="card border border-base-300 bg-base-100 shadow-sm">
+            <div className="card-body p-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-base-content/70">{label}</p>
+                  <p className="mt-1 text-2xl font-bold">{value}</p>
+                </div>
+                <div className={`rounded-box p-3 ${tone}`}>
+                  <Icon size={22} />
+                </div>
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-gray-500">{label}</p>
-              <p className="text-xl font-bold text-gray-800">{value}</p>
-            </div>
-          </div>
+          </article>
         ))}
-      </div>
+      </section>
 
-      <div className="bg-white rounded-xl shadow-sm p-5">
-        <h2 className="text-lg font-bold text-gray-800 mb-4">Ventas Recientes</h2>
-        {recentSales.length === 0 ? (
-          <p className="text-gray-500 text-center py-8">No hay ventas registradas</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-2 text-gray-500">N° Boleta</th>
-                  <th className="text-left py-2 text-gray-500">Cliente</th>
-                  <th className="text-left py-2 text-gray-500">Fecha</th>
-                  <th className="text-right py-2 text-gray-500">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentSales.map(sale => (
-                  <tr key={sale.id} className="border-b last:border-0">
-                    <td className="py-2 font-medium">{sale.numero}</td>
-                    <td className="py-2">{sale.clienteNombre || 'Consumidor Final'}</td>
-                    <td className="py-2">{new Date(sale.fecha).toLocaleDateString()}</td>
-                    <td className="py-2 text-right font-medium">${sale.total.toFixed(2)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      {/* Tabla con las ventas más recientes */}
+      <section className="card border border-base-300 bg-base-100 shadow-sm">
+        <div className="card-body p-0">
+          <div className="flex flex-wrap items-center justify-between gap-2 px-5 pb-2 pt-5">
+            <h2 className="card-title text-lg">Ventas recientes</h2>
+            <span className="badge badge-outline">{recentSales.length} registros</span>
           </div>
+
+        {recentSales.length === 0 ? (
+            <div className="px-5 pb-5">
+              <div className="alert">
+                <span>No hay ventas registradas todavía.</span>
+              </div>
+            </div>
+        ) : (
+          /* Lista de las últimas ventas — el componente list encaja bien aquí
+             porque son pocos registros y no necesitan cabeceras de columna */
+          <ul className="list">
+            {recentSales.map((sale) => (
+              <li key={sale.id} className="list-row items-center">
+
+                {/* Número de boleta */}
+                <div>
+                  <p className="text-xs text-base-content/50">Boleta</p>
+                  <p className="font-medium">{sale.numero}</p>
+                </div>
+
+                {/* Cliente y fecha — crece para usar el espacio libre */}
+                <div className="list-col-grow">
+                  <p className="text-sm">{sale.clienteNombre || 'Consumidor final'}</p>
+                  <p className="text-xs text-base-content/50">{new Date(sale.fecha).toLocaleDateString()}</p>
+                </div>
+
+                {/* Total alineado a la derecha */}
+                <div className="text-right">
+                  <p className="font-semibold">{formatCurrency(sale.total)}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
         )}
-      </div>
+        </div>
+      </section>
     </div>
   );
 };
