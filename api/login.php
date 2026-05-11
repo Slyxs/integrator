@@ -35,9 +35,9 @@ $stmt->execute([$email]);
 // Obtiene la fila resultante (si existe)
 $user = $stmt->fetch();
 
-// Verificar que el usuario exista y que la contraseña coincida.
+// Verificar que el usuario exista y que la contraseña coincida (bcrypt).
 // Si la contraseña no coincide o el usuario no existe, devuelve un error 401 Unauthorized.
-if (!$user || $user['password'] !== $password) {
+if (!$user || !password_verify($password, $user['password'])) {
     jsonError('Credenciales incorrectas', 401);
 }
 

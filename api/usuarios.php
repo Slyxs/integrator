@@ -73,10 +73,11 @@ switch ($method) {
             'INSERT INTO usuarios (nombre, email, password, rol) VALUES (?, ?, ?, ?)'
         );
         // Ejecuta la inserción con los datos proporcionados en el cuerpo JSON.
+        // La contraseña se hashea con bcrypt antes de guardarla.
         $stmt->execute([
             $input['nombre'],
             $email,
-            $input['password'],
+            password_hash($input['password'], PASSWORD_BCRYPT),
             $input['rol'] ?? 'usuario',
         ]);
         // Devuelve el usuario recién creado con el ID generado por MySQL y un código 201 Created.
@@ -115,10 +116,11 @@ switch ($method) {
                 'UPDATE usuarios SET nombre = ?, email = ?, password = ?, rol = ? WHERE id = ?'
             );
             // Ejecuta la actualización con los datos proporcionados en el cuerpo JSON.
+            // La contraseña se hashea con bcrypt antes de guardarla.
             $stmt->execute([
                 $input['nombre'],
                 $email,
-                $input['password'],
+                password_hash($input['password'], PASSWORD_BCRYPT),
                 $input['rol'] ?? 'usuario',
                 $id,
             ]);

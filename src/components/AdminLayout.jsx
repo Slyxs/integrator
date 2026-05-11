@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
+  BarChart3,
   Coffee,
   House,
   LayoutDashboard,
@@ -15,9 +16,12 @@ import { useAuth } from '../context/AuthContext';
 
 const links = [
   { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/admin/usuarios', label: 'Usuarios', icon: Users },
+  { to: '/admin/clientes', label: 'Clientes', icon: Users },
   { to: '/admin/productos', label: 'Productos', icon: Package },
   { to: '/admin/ventas', label: 'Ventas', icon: ReceiptText },
+  // DONE: empieza enlace de reportes en el menú administrativo
+  { to: '/admin/reportes', label: 'Reportes', icon: BarChart3 },
+  // DONE: termina enlace de reportes en el menú administrativo
 ];
 
 const AdminLayout = () => {

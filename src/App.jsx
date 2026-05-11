@@ -17,6 +17,7 @@ import Dashboard from './pages/admin/Dashboard';
 import Clients from './pages/admin/Clients';
 import Products from './pages/admin/Products';
 import Sales from './pages/admin/Sales';
+import Reports from './pages/admin/Reports';
 import Menu from './pages/user/Menu';
 import Cart from './pages/user/Cart';
 import Receipt from './pages/user/Receipt';
@@ -163,9 +164,12 @@ function App() {
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<Navigate to="dashboard" replace />} />
                 <Route path="dashboard" element={<Dashboard />} />
-                <Route path="usuarios" element={<Clients />} />
+                <Route path="clientes" element={<Clients />} />
                 <Route path="productos" element={<Products />} />
                 <Route path="ventas" element={<Sales />} />
+                {/* DONE: empieza ruta de reportes del administrador */}
+                <Route path="reportes" element={<Reports />} />
+                {/* DONE: termina ruta de reportes del administrador */}
               </Route>
             </Route>
 

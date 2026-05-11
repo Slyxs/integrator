@@ -6,8 +6,6 @@ import toast from 'react-hot-toast';
 
 const emptyForm = { nombre: '', email: '', password: '', rol: 'usuario' };
 
-const rolLabels = { admin: 'Administrador', usuario: 'Usuario' };
-
 const Clients = () => {
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState('');
@@ -23,9 +21,11 @@ const Clients = () => {
 
   useEffect(() => { loadUsers(); }, []);
 
-  const filtered = users.filter((user) =>
-    `${user.nombre} ${user.email} ${user.rol}`.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = users
+    .filter((user) => user.rol !== 'admin')
+    .filter((user) =>
+      `${user.nombre} ${user.email}`.toLowerCase().includes(search.toLowerCase())
+    );
 
   const openCreate = () => {
     setForm(emptyForm);
@@ -38,7 +38,7 @@ const Clients = () => {
       nombre: user.nombre,
       email: user.email || '',
       password: '',
-      rol: user.rol,
+      rol: 'usuario',
     });
     setEditingId(user.id);
     setShowModal(true);
@@ -48,17 +48,17 @@ const Clients = () => {
     event.preventDefault();
     try {
       if (editingId) {
-        const data = { nombre: form.nombre, email: form.email, rol: form.rol };
+        const data = { nombre: form.nombre, email: form.email, rol: 'usuario' };
         if (form.password) data.password = form.password;
         await updateUser(editingId, data);
-        toast.success('Usuario actualizado');
+        toast.success('Cliente actualizado');
       } else {
         if (!form.password) {
-          toast.error('La contraseña es requerida para nuevos usuarios');
+          toast.error('La contraseña es requerida para nuevos clientes');
           return;
         }
-        await createUser(form);
-        toast.success('Usuario creado');
+        await createUser({ ...form, rol: 'usuario' });
+        toast.success('Cliente creado');
       }
       setShowModal(false);
       loadUsers();
@@ -72,10 +72,10 @@ const Clients = () => {
       toast.error('No puedes eliminar tu propia cuenta');
       return;
     }
-    if (!window.confirm('¿Estás seguro de eliminar este usuario?')) return;
+    if (!window.confirm('¿Estás seguro de eliminar este cliente?')) return;
     try {
       await deleteUser(id);
-      toast.success('Usuario eliminado');
+      toast.success('Cliente eliminado');
       loadUsers();
     } catch (err) {
       toast.error(err.message);
@@ -87,35 +87,35 @@ const Clients = () => {
       {/* Encabezado con búsqueda y alta de usuarios */}
       <section className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Usuarios</h1>
-          <p className="text-sm text-base-content/70">Administra cuentas, roles y credenciales del sistema.</p>
+          <h1 className="text-3xl font-bold">Clientes</h1>
+          <p className="text-sm text-base-content/70">Administra las cuentas de clientes del sistema.</p>
         </div>
 
         <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto">
-          {/* Campo para filtrar por nombre, correo o rol */}
+          {/* Campo para filtrar por nombre o correo */}
           <label className="input input-bordered w-full sm:w-80">
             <Search size={16} className="opacity-70" />
             <input
               type="text"
-              placeholder="Buscar usuario"
+              placeholder="Buscar cliente"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
             />
           </label>
 
-          {/* Botón para abrir el formulario de nuevo usuario */}
+          {/* Botón para abrir el formulario de nuevo cliente */}
           <button
             type="button"
             onClick={openCreate}
             className="btn btn-primary"
           >
             <Plus size={16} />
-            Nuevo usuario
+            Nuevo cliente
           </button>
         </div>
       </section>
 
-      {/* Tabla con usuarios registrados */}
+      {/* Tabla con clientes registrados */}
       <section className="card border border-base-300 bg-base-100 shadow-sm">
         <div className="card-body p-0">
         <div className="overflow-x-auto">
@@ -124,7 +124,6 @@ const Clients = () => {
               <tr>
                 <th>Nombre</th>
                 <th>Email</th>
-                <th className="hidden md:table-cell">Rol</th>
                 <th className="text-right">Acciones</th>
               </tr>
             </thead>
@@ -140,22 +139,10 @@ const Clients = () => {
                           </span>
                         </div>
                       </div>
-                      <div>
-                        <div>{user.nombre}</div>
-                        <div className="text-xs text-base-content/60 md:hidden">{rolLabels[user.rol] || user.rol}</div>
-                      </div>
+                      <div>{user.nombre}</div>
                     </div>
                   </td>
                   <td>{user.email}</td>
-                  <td className="hidden md:table-cell">
-                    <span className={`badge badge-sm ${
-                      user.rol === 'admin'
-                        ? 'badge-secondary'
-                        : 'badge-info'
-                    }`}>
-                      {rolLabels[user.rol] || user.rol}
-                    </span>
-                  </td>
                   <td className="text-right">
                     <div className="join">
                       <button
@@ -184,8 +171,8 @@ const Clients = () => {
               {/* Mensaje vacío si no hay resultados de búsqueda */}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan="4" className="text-center text-base-content/60">
-                    No se encontraron usuarios.
+                  <td colSpan="3" className="text-center text-base-content/60">
+                    No se encontraron clientes.
                   </td>
                 </tr>
               )}
@@ -195,18 +182,18 @@ const Clients = () => {
         </div>
       </section>
 
-      {/* Modal para crear o editar usuarios */}
+      {/* Modal para crear o editar clientes */}
       {showModal && (
         <div className="modal modal-open">
           <div className="modal-box max-w-2xl">
             {/* Encabezado del modal */}
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h2 className="text-xl font-bold">{editingId ? 'Editar usuario' : 'Nuevo usuario'}</h2>
+                <h2 className="text-xl font-bold">{editingId ? 'Editar cliente' : 'Nuevo cliente'}</h2>
                 <p className="text-sm text-base-content/70">
                   {editingId
-                    ? 'Modifica datos, correo o rol del usuario seleccionado.'
-                    : 'Completa los campos para registrar una nueva cuenta.'}
+                    ? 'Modifica los datos del cliente seleccionado.'
+                    : 'Completa los campos para registrar un nuevo cliente.'}
                 </p>
               </div>
               <button
@@ -262,27 +249,13 @@ const Clients = () => {
                 />
               </fieldset>
 
-              {/* Campo: rol de acceso */}
-              <fieldset className="fieldset">
-                <legend className="fieldset-legend">Rol *</legend>
-                <select
-                  required
-                  value={form.rol}
-                  onChange={(event) => setForm({ ...form, rol: event.target.value })}
-                  className="select select-bordered w-full"
-                >
-                  <option value="usuario">Usuario</option>
-                  <option value="admin">Administrador</option>
-                </select>
-              </fieldset>
-
               {/* Botones finales del formulario */}
               <div className="modal-action">
                 <button type="button" onClick={() => setShowModal(false)} className="btn btn-ghost">
                   Cancelar
                 </button>
                 <button type="submit" className="btn btn-primary">
-                  {editingId ? 'Actualizar usuario' : 'Crear usuario'}
+                  {editingId ? 'Actualizar cliente' : 'Crear cliente'}
                 </button>
               </div>
             </form>
