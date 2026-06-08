@@ -26,6 +26,14 @@ function castClient(array $c): array {
 switch ($method) {
     // ----- LEER -----
     case 'GET':
+        // Si se pasa ?usuario_id=N devuelve el cliente vinculado a ese usuario
+        if (isset($_GET['usuario_id'])) {
+            $stmt = $db->prepare('SELECT * FROM clientes WHERE usuario_id = ? AND estado = 1');
+            $stmt->execute([$_GET['usuario_id']]);
+            $row = $stmt->fetch();
+            jsonResponse($row ? castClient($row) : null);
+        }
+
         // Si se pasa ?id=N devuelve solo ese cliente
         if (isset($_GET['id'])) {
             // Selecciona todos los campos de la tabla clientes donde el id coincide.

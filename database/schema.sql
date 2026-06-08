@@ -265,3 +265,62 @@ JOIN (
 ) vendidos ON vendidos.producto_id = p.id
 SET p.stock = GREATEST(0, p.stock - vendidos.cantidad_vendida);
 -- DONE: termina ventas históricas para reportes diarios, semanales, mensuales y anuales
+
+-- ============================================================
+-- TABLA DE PROMOCIONES / CÓDIGOS DE DESCUENTO
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS promociones (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  codigo VARCHAR(30) UNIQUE NOT NULL,
+  titulo VARCHAR(100) NOT NULL,
+  descripcion TEXT,
+  tipo ENUM('porcentaje', 'monto_fijo') NOT NULL DEFAULT 'porcentaje',
+  valor DECIMAL(10,2) NOT NULL,
+  minimo_compra DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  usos_maximos INT DEFAULT NULL,          -- NULL = sin límite de usos
+  usos_actuales INT NOT NULL DEFAULT 0,
+  fecha_inicio DATE NOT NULL,
+  fecha_fin DATE DEFAULT NULL,            -- NULL = sin fecha de vencimiento
+  estado BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO promociones
+  (codigo, titulo, descripcion, tipo, valor, minimo_compra, usos_maximos, fecha_inicio, fecha_fin)
+VALUES
+  (
+    'BIENVENIDO10',
+    'Descuento de Bienvenida',
+    'Disfruta un 10% de descuento en tu primera visita. ¡Gracias por elegirnos!',
+    'porcentaje', 10.00, 0.00, 100,
+    CURDATE(), DATE_ADD(CURDATE(), INTERVAL 30 DAY)
+  ),
+  (
+    'CAFE5SOL',
+    'Café del Día',
+    'S/ 5 de descuento en cualquier compra de café. Código válido por tiempo limitado.',
+    'monto_fijo', 5.00, 20.00, 50,
+    CURDATE(), DATE_ADD(CURDATE(), INTERVAL 15 DAY)
+  ),
+  (
+    'VERANO20',
+    'Promo Verano',
+    '¡Refresca tu verano! 20% de descuento en compras desde S/ 30.',
+    'porcentaje', 20.00, 30.00, 200,
+    CURDATE(), DATE_ADD(CURDATE(), INTERVAL 60 DAY)
+  ),
+  (
+    'FIEL15',
+    'Cliente Fiel',
+    'Para nuestros clientes más frecuentes: 15% de descuento en compras desde S/ 50.',
+    'porcentaje', 15.00, 50.00, NULL,
+    CURDATE(), DATE_ADD(CURDATE(), INTERVAL 90 DAY)
+  ),
+  (
+    'ESPECIAL10',
+    'Combo Especial',
+    'S/ 10 de descuento en compras desde S/ 40. Ideal para compartir con amigos.',
+    'monto_fijo', 10.00, 40.00, 75,
+    CURDATE(), DATE_ADD(CURDATE(), INTERVAL 45 DAY)
+  );

@@ -1,17 +1,19 @@
+import {
+    BarChart3,
+    Coffee,
+    House,
+    LayoutDashboard,
+    LogOut,
+    Package,
+    PanelLeftClose,
+    PanelLeftOpen,
+    ReceiptText,
+    Tag,
+    TicketPercent,
+    Users,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import {
-  BarChart3,
-  Coffee,
-  House,
-  LayoutDashboard,
-  LogOut,
-  Package,
-  PanelLeftClose,
-  PanelLeftOpen,
-  ReceiptText,
-  Users,
-} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const links = [
@@ -22,6 +24,8 @@ const links = [
   // DONE: empieza enlace de reportes en el menú administrativo
   { to: '/admin/reportes', label: 'Reportes', icon: BarChart3 },
   // DONE: termina enlace de reportes en el menú administrativo
+  { to: '/admin/categorias', label: 'Categorías', icon: Tag },
+  { to: '/admin/promociones', label: 'Promociones', icon: TicketPercent },
 ];
 
 const AdminLayout = () => {

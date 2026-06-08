@@ -1,5 +1,7 @@
 import { createContext, useContext, useState } from 'react';
-import { getCurrentUser, login as apiLogin, logout as apiLogout } from '../services/api';
+import { login as apiLogin, logout as apiLogout, getCurrentUser, updateUser } from '../services/api';
+
+const USER_KEY = 'jv_current_user';
 
 // createContext crea el "canal" por donde se comparten los datos de sesión.
 // El null es el valor por defecto si alguien intenta usarlo fuera del provider.
@@ -39,6 +41,18 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Actualiza nombre y email del usuario activo, con contraseña opcional.
+  // Persiste el cambio en localStorage para que sobreviva a recargas.
+  const updateProfile = async ({ nombre, email, password }) => {
+    const payload = { nombre, email, rol: user.rol };
+    if (password) payload.password = password;
+    const updated = await updateUser(user.id, payload);
+    const merged = { ...user, nombre: updated.nombre, email: updated.email };
+    localStorage.setItem(USER_KEY, JSON.stringify(merged));
+    setUser(merged);
+    return merged;
+  };
+
   // Borra la sesión del localStorage (apiLogout) y limpia el estado local.
   // Al poner user en null todos los componentes que lo usen se actualizan solos.
   const logout = () => {
@@ -54,7 +68,7 @@ export const AuthProvider = ({ children }) => {
   // Si algún valor cambia (ej: user después del login), React re-renderiza
   // automáticamente los componentes que lo estén usando.
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAdmin, loading }}>
+    <AuthContext.Provider value={{ user, login, logout, isAdmin, loading, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );

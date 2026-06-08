@@ -1,28 +1,70 @@
 <?php
 // ============================================================
-// GET /api/categorias.php - Listar categorías activas
+// /api/categorias.php - CRUD de categorías
 // ============================================================
-// Solo soporta GET. Devuelve todas las categorías con estado = 1.
-// Se usa en el menú de usuario y en el formulario de productos del admin
-// para poblar los selectores de categoría.
+// GET           → lista todas las categorías activas
+// POST          → crea una nueva categoría
+// PUT           → actualiza nombre/descripción de una categoría
+// DELETE        → soft delete (estado = 0)
 // ============================================================
 require_once __DIR__ . '/config.php';
 
-// Rechazar cualquier método distinto a GET
-if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-    jsonError('Método no permitido', 405);
+$db     = getDB();
+$method = $_SERVER['REQUEST_METHOD'];
+
+function castCategory(array $c): array {
+    $c['id']     = (int) $c['id'];
+    $c['estado'] = (bool) $c['estado'];
+    return $c;
 }
 
-// Obtener todas las categorías activas de la base de datos
-$db   = getDB();
-$stmt = $db->query('SELECT id, nombre, descripcion, estado FROM categorias WHERE estado = 1');
-$rows = $stmt->fetchAll();
+switch ($method) {
+    // ----- LEER -----
+    case 'GET':
+        $stmt = $db->query('SELECT id, nombre, descripcion, estado FROM categorias WHERE estado = 1 ORDER BY nombre');
+        jsonResponse(array_map('castCategory', $stmt->fetchAll()));
+        break;
 
-// Normalizar tipos: id como entero y estado como booleano
-// para que el JSON sea consistente con lo que espera el frontend.
-foreach ($rows as &$r) {
-    $r['id']     = (int) $r['id'];
-    $r['estado'] = (bool) $r['estado'];
+    // ----- CREAR -----
+    case 'POST':
+        $input = getInput();
+        if (empty($input['nombre'])) jsonError('El nombre es requerido');
+        $stmt = $db->prepare('INSERT INTO categorias (nombre, descripcion) VALUES (?, ?)');
+        $stmt->execute([$input['nombre'], $input['descripcion'] ?? null]);
+        jsonResponse(castCategory([
+            'id'          => (int) $db->lastInsertId(),
+            'nombre'      => $input['nombre'],
+            'descripcion' => $input['descripcion'] ?? null,
+            'estado'      => 1,
+        ]), 201);
+        break;
+
+    // ----- ACTUALIZAR -----
+    case 'PUT':
+        $input = getInput();
+        $id    = $input['id'] ?? null;
+        if (!$id) jsonError('ID requerido');
+        if (empty($input['nombre'])) jsonError('El nombre es requerido');
+        $stmt = $db->prepare('UPDATE categorias SET nombre = ?, descripcion = ? WHERE id = ?');
+        $stmt->execute([$input['nombre'], $input['descripcion'] ?? null, $id]);
+        jsonResponse(castCategory([
+            'id'          => (int) $id,
+            'nombre'      => $input['nombre'],
+            'descripcion' => $input['descripcion'] ?? null,
+            'estado'      => 1,
+        ]));
+        break;
+
+    // ----- ELIMINAR (soft delete) -----
+    case 'DELETE':
+        $input = getInput();
+        $id    = $input['id'] ?? null;
+        if (!$id) jsonError('ID requerido');
+        $stmt = $db->prepare('UPDATE categorias SET estado = 0 WHERE id = ?');
+        $stmt->execute([$id]);
+        jsonResponse(['message' => 'Categoría eliminada']);
+        break;
+
+    default:
+        jsonError('Método no permitido', 405);
 }
-
-jsonResponse($rows);

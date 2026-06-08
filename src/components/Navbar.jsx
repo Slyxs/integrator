@@ -2,11 +2,11 @@
 // Barra de navegación principal
 // TODO: Considerar añadir un banner de promociones arriba del navbar
 // =============================================
+import { Coffee, LogOut, Mail, Menu, Settings, ShoppingCart, User, UtensilsCrossed, X } from 'lucide-react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Menu, X, User, UserPlus, LogOut, Settings, Coffee, UtensilsCrossed } from 'lucide-react';
+import logo from '../assets/imgs/juan-valdez-cafe-seeklogo.png';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import logo from '../assets/imgs/juan-valdez-cafe-seeklogo.png';
 
 const Navbar = ({ drawerOpen = false, onToggleDrawer = () => {} }) => {
   const { user, logout, isAdmin } = useAuth();
@@ -69,6 +69,16 @@ const Navbar = ({ drawerOpen = false, onToggleDrawer = () => {} }) => {
                 Menú
               </NavLink>
             </li>
+            <li>
+              <NavLink
+                to="/contacto"
+                className={({ isActive }) =>
+                  isActive ? 'font-semibold text-primary bg-primary/10 rounded-lg' : 'font-medium'
+                }
+              >
+                Contacto
+              </NavLink>
+            </li>
           </ul>
         </div>
 
@@ -113,6 +123,14 @@ const Navbar = ({ drawerOpen = false, onToggleDrawer = () => {} }) => {
                       </Link>
                     </li>
                   )}
+                  {!isAdmin && (
+                    <li>
+                      <Link to="/perfil" className="gap-2">
+                        <User size={15} />
+                        Mi Perfil
+                      </Link>
+                    </li>
+                  )}
                   {/* TODO: Añadir link a "Mi perfil" aquí */}
                   <li>
                     <button onClick={handleLogout} className="gap-2 text-error">
@@ -150,6 +168,11 @@ const Navbar = ({ drawerOpen = false, onToggleDrawer = () => {} }) => {
           <span className="dock-label">Menú</span>
         </Link>
 
+        <Link to="/contacto" className={isDockActive('/contacto') ? 'dock-active' : ''}>
+          <Mail size={20} />
+          <span className="dock-label">Contacto</span>
+        </Link>
+
         {/* Carrito — solo si hay sesión y no es admin */}
         {user && !isAdmin && (
           <Link to="/carrito" className={isDockActive('/carrito') ? 'dock-active' : ''}>
@@ -180,11 +203,10 @@ const Navbar = ({ drawerOpen = false, onToggleDrawer = () => {} }) => {
             <span className="dock-label">Entrar</span>
           </Link>
         ) : (
-          // Cerrar sesión rápido desde el dock
-          <button onClick={handleLogout}>
-            <LogOut size={20} />
-            <span className="dock-label">Salir</span>
-          </button>
+          <Link to="/perfil" className={isDockActive('/perfil') ? 'dock-active' : ''}>
+            <User size={20} />
+            <span className="dock-label">Perfil</span>
+          </Link>
         )}
       </div>
     </>

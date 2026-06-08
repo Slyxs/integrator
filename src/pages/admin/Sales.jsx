@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
 import { Eye, Search, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { getSales } from '../../services/api';
 
 const formatCurrency = (amount) => `$${amount.toFixed(2)}`;

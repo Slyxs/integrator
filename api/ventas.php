@@ -99,6 +99,30 @@ switch ($method) {
             jsonResponse($sale);
         }
 
+        // Si se pasa ?usuario_id=N devuelve solo las ventas de ese usuario
+        if (isset($_GET['usuario_id'])) {
+            $stmt = $db->prepare(
+                'SELECT id, numero,
+                        cliente_nombre    AS clienteNombre,
+                        cliente_documento AS clienteDocumento,
+                        usuario_id        AS usuarioId,
+                        usuario_nombre    AS usuarioNombre,
+                        metodo_pago       AS metodoPago,
+                        total, estado,
+                        created_at        AS fecha
+                   FROM ventas
+                  WHERE usuario_id = ?
+                  ORDER BY id DESC'
+            );
+            $stmt->execute([$_GET['usuario_id']]);
+            $sales = $stmt->fetchAll();
+            foreach ($sales as &$s) {
+                $s = castSale($s);
+                attachItems($db, $s);
+            }
+            jsonResponse($sales);
+        }
+
         // Sin parámetros: todas las ventas en orden cronológico ascendente.
         // El frontend puede invertir el orden si muestra las más recientes primero.
         $stmt = $db->query(

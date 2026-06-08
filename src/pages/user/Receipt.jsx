@@ -1,9 +1,16 @@
-import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { FiPrinter, FiArrowLeft } from 'react-icons/fi';
+import { useEffect, useState } from 'react';
+import { FiArrowLeft, FiPrinter } from 'react-icons/fi';
+import { Link, useParams } from 'react-router-dom';
 import { getSaleById } from '../../services/api';
 
-const formatCurrency = (amount) => `S/ ${amount.toFixed(2)}`;
+const toNumber = (value) => {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+};
+
+const roundCurrency = (amount) => Math.round((amount + Number.EPSILON) * 100) / 100;
+
+const formatCurrency = (amount) => `S/ ${(toNumber(amount) ?? 0).toFixed(2)}`;
 
 const Receipt = () => {
   // id viene de la URL (ej: /receipt/42) y se usa para buscar la venta
@@ -53,9 +60,27 @@ const Receipt = () => {
     );
   }
 
-  const subtotal = sale.items.reduce((sum, item) => sum + item.cantidad * item.precioUnitario, 0);
-  const igv = subtotal * 0.18;
-  const totalConIgv = subtotal + igv;
+  const itemsSubtotal = roundCurrency(
+    sale.items.reduce((sum, item) => sum + item.cantidad * item.precioUnitario, 0)
+  );
+  const resumen = sale.detallePago?.resumen || {};
+  const totalPagado = roundCurrency(toNumber(resumen.total) ?? toNumber(sale.total) ?? itemsSubtotal);
+  const subtotal = roundCurrency(toNumber(resumen.subtotal) ?? itemsSubtotal);
+  const savedDiscount = toNumber(resumen.descuento);
+
+  const descuento = roundCurrency(savedDiscount ?? (() => {
+    const totalSinDescuento = roundCurrency(itemsSubtotal * 1.18);
+
+    if (Math.abs(totalPagado - itemsSubtotal) < 0.01) return 0;
+    if (totalPagado <= totalSinDescuento) {
+      return Math.max(0, itemsSubtotal - (totalPagado / 1.18));
+    }
+
+    return 0;
+  })());
+  const subtotalConDescuento = roundCurrency(toNumber(resumen.subtotalConDescuento) ?? Math.max(0, subtotal - descuento));
+  const igv = roundCurrency(toNumber(resumen.igv) ?? Math.max(0, totalPagado - subtotalConDescuento));
+  const promoCodigo = sale.detallePago?.promocion?.codigo;
 
   return (
     <div className="min-h-screen bg-base-200/60 py-8">
@@ -148,13 +173,21 @@ const Receipt = () => {
                 <div className="stat-title">Subtotal</div>
                 <div className="stat-value text-xl">{formatCurrency(subtotal)}</div>
               </div>
+              {descuento > 0 && (
+                <div className="stat">
+                  <div className="stat-title text-success">
+                    Descuento{promoCodigo ? ` (${promoCodigo})` : ''}
+                  </div>
+                  <div className="stat-value text-success text-xl">- {formatCurrency(descuento)}</div>
+                </div>
+              )}
               <div className="stat">
                 <div className="stat-title">IGV (18%)</div>
                 <div className="stat-value text-xl">{formatCurrency(igv)}</div>
               </div>
               <div className="stat">
                 <div className="stat-title">Total</div>
-                <div className="stat-value text-primary text-3xl">{formatCurrency(totalConIgv)}</div>
+                <div className="stat-value text-primary text-3xl">{formatCurrency(totalPagado)}</div>
               </div>
             </div>
           </div>

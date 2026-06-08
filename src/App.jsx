@@ -1,25 +1,27 @@
+import { Coffee, LogOut, Mail, Settings, ShoppingCart, User, UserPlus, UtensilsCrossed } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Outlet, Link, NavLink, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { Coffee, UtensilsCrossed, ShoppingCart, User, UserPlus, LogOut, Settings } from 'lucide-react';
-import { AuthProvider } from './context/AuthContext';
-import { CartProvider } from './context/CartContext';
-import { useAuth } from './context/AuthContext';
-import { useCart } from './context/CartContext';
-import ProtectedRoute from './components/ProtectedRoute';
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
+import { BrowserRouter, Link, Navigate, NavLink, Outlet, Route, Routes, useLocation } from 'react-router-dom';
 import AdminLayout from './components/AdminLayout';
+import Footer from './components/Footer';
+import Navbar from './components/Navbar';
+import ProtectedRoute from './components/ProtectedRoute';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { CartProvider, useCart } from './context/CartContext';
+import Contact from './pages/Contact';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Dashboard from './pages/admin/Dashboard';
+import Categories from './pages/admin/Categories';
 import Clients from './pages/admin/Clients';
+import Dashboard from './pages/admin/Dashboard';
 import Products from './pages/admin/Products';
-import Sales from './pages/admin/Sales';
+import Promotions from './pages/admin/Promotions';
 import Reports from './pages/admin/Reports';
-import Menu from './pages/user/Menu';
+import Sales from './pages/admin/Sales';
 import Cart from './pages/user/Cart';
+import Menu from './pages/user/Menu';
+import Profile from './pages/user/Profile';
 import Receipt from './pages/user/Receipt';
 import { initializeApp } from './services/api';
 
@@ -51,6 +53,12 @@ const PublicSidebar = ({ onNavigate }) => {
         <NavLink to="/menu" className={linkClass} onClick={onNavigate}>
           <UtensilsCrossed size={18} />
           <span>Menú</span>
+        </NavLink>
+      </li>
+      <li>
+        <NavLink to="/contacto" className={linkClass} onClick={onNavigate}>
+          <Mail size={18} />
+          <span>Contacto</span>
         </NavLink>
       </li>
       {user && !isAdmin && (
@@ -87,12 +95,22 @@ const PublicSidebar = ({ onNavigate }) => {
           </li>
         </>
       ) : (
-        <li>
-          <button type="button" className="gap-3 rounded-box text-error hover:bg-error/10" onClick={handleLogout}>
-            <LogOut size={18} />
-            <span>Cerrar Sesión</span>
-          </button>
-        </li>
+        <>
+          {!isAdmin && (
+            <li>
+              <NavLink to="/perfil" className={linkClass} onClick={onNavigate}>
+                <User size={18} />
+                <span>Mi Perfil</span>
+              </NavLink>
+            </li>
+          )}
+          <li>
+            <button type="button" className="gap-3 rounded-box text-error hover:bg-error/10" onClick={handleLogout}>
+              <LogOut size={18} />
+              <span>Cerrar Sesión</span>
+            </button>
+          </li>
+        </>
       )}
     </ul>
   );
@@ -153,10 +171,12 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/registro" element={<Register />} />
               <Route path="/menu" element={<Menu />} />
+              <Route path="/contacto" element={<Contact />} />
 
               <Route element={<ProtectedRoute />}>
                 <Route path="/carrito" element={<Cart />} />
                 <Route path="/recibo/:id" element={<Receipt />} />
+                <Route path="/perfil" element={<Profile />} />
               </Route>
             </Route>
 
@@ -170,6 +190,8 @@ function App() {
                 {/* DONE: empieza ruta de reportes del administrador */}
                 <Route path="reportes" element={<Reports />} />
                 {/* DONE: termina ruta de reportes del administrador */}
+                <Route path="categorias" element={<Categories />} />
+                <Route path="promociones" element={<Promotions />} />
               </Route>
             </Route>
 

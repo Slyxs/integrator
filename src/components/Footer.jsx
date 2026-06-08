@@ -3,10 +3,10 @@
 // TODO: Añadir sección de newsletter cuando tengamos el backend listo
 // TODO: Añadir mapa embedido de Google Maps con la ubicación
 // =============================================
+import { Clock, Mail, MapPin, Phone } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { MapPin, Phone, Mail, Clock } from 'lucide-react';
 // Lucide no incluye iconos de marcas registradas — usamos react-icons/fa para redes sociales
-import { FaInstagram, FaFacebook, FaXTwitter } from 'react-icons/fa6';
+import { FaFacebook, FaInstagram, FaXTwitter } from 'react-icons/fa6';
 import logo from '../assets/imgs/juan-valdez-cafe-seeklogo.png';
 
 const Footer = () => (
@@ -62,6 +62,9 @@ const Footer = () => (
         </Link>
         <Link to="/menu" className="link link-hover text-gray-300 hover:text-white">
           Menú
+        </Link>
+        <Link to="/contacto" className="link link-hover text-gray-300 hover:text-white">
+          Contacto
         </Link>
         <Link to="/login" className="link link-hover text-gray-300 hover:text-white">
           Iniciar Sesión

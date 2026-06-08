@@ -3,11 +3,14 @@
 // TODO: Añadir sección de acordeón con preguntas frecuentes
 // TODO: Añadir carrusel de productos destacados cuando tengamos imágenes
 // =============================================
+import { ArrowRight, Award, ChevronDown, Coffee, Heart, Leaf, Star, Tag } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Coffee, Award, Heart, ArrowRight, Star, ChevronDown, Leaf } from 'lucide-react';
 import heroBg from '../assets/imgs/home-hero.jpg';
+import { getPromociones } from '../services/api';
 
 // Características principales del café — podría venir de la BD después
+// eslint-disable-next-line no-unused-vars
 const features = [
   {
     icon: Coffee,
@@ -34,6 +37,21 @@ const reseñas = [
 ];
 
 const Home = () => {
+  const [promociones, setPromociones] = useState([]);
+
+  useEffect(() => {
+    getPromociones()
+      .then(setPromociones)
+      .catch(() => {}); // si XAMPP no está corriendo, simplemente no se muestra
+  }, []);
+
+  // Formatea "YYYY-MM-DD" → "DD/MM/YYYY" para mostrar al usuario
+  const formatFecha = (iso) => {
+    if (!iso) return null;
+    const [y, m, d] = iso.split('-');
+    return `${d}/${m}/${y}`;
+  };
+
   return (
     <div>
 
@@ -181,8 +199,128 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ===== CTA FINAL ===== */}
-      <div className="hero py-20 bg-primary text-white">
+      {/* ===== SECCIÓN: PROMOCIONES ===== */}
+      {promociones.length > 0 && (
+        <section className="py-16 bg-base-100">
+          <div className="max-w-4xl mx-auto px-4">
+            <div className="text-center mb-10">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Tag size={22} className="text-primary" />
+                <h2 className="text-2xl md:text-3xl font-bold text-coffee">
+                  Promociones Activas
+                </h2>
+              </div>
+              <p className="text-base-content/60 text-sm">
+                Copia el código y úsalo al finalizar tu compra.
+              </p>
+            </div>
+
+            {/* Carrusel DaisyUI — navega con las flechas laterales */}
+            <div className="carousel w-full rounded-2xl overflow-hidden">
+              {promociones.map((promo, i) => {
+                const prevIdx = (i - 1 + promociones.length) % promociones.length;
+                const nextIdx = (i + 1) % promociones.length;
+                const esPorcentaje = promo.tipo === 'porcentaje';
+                const etiquetaValor = esPorcentaje
+                  ? `${promo.valor}% OFF`
+                  : `S/ ${promo.valor.toFixed(2)} OFF`;
+
+                return (
+                  <div
+                    key={promo.id}
+                    id={`promo-slide-${i}`}
+                    className="carousel-item relative w-full"
+                  >
+                    {/* Tarjeta de la promoción */}
+                    <div className="w-full bg-gradient-to-br from-primary to-primary/80 text-primary-content p-8 md:p-12">
+                      <div className="flex flex-col md:flex-row items-start md:items-center gap-6 max-w-2xl mx-auto">
+
+                        {/* Columna izquierda: badge + título + descripción */}
+                        <div className="flex-1 min-w-0">
+                          <div className="badge badge-secondary badge-lg font-bold mb-3">
+                            {etiquetaValor}
+                          </div>
+                          <h3 className="text-xl md:text-2xl font-bold leading-tight mb-2">
+                            {promo.titulo}
+                          </h3>
+                          <p className="text-sm text-primary-content/80 leading-relaxed mb-4">
+                            {promo.descripcion}
+                          </p>
+                          <div className="flex flex-wrap gap-3 text-xs text-primary-content/70">
+                            {promo.minimo_compra > 0 && (
+                              <span className="badge badge-outline badge-sm">
+                                Compra mínima S/ {promo.minimo_compra.toFixed(2)}
+                              </span>
+                            )}
+                            {promo.fecha_fin && (
+                              <span className="badge badge-outline badge-sm">
+                                Válido hasta {formatFecha(promo.fecha_fin)}
+                              </span>
+                            )}
+                            {promo.usos_maximos && (
+                              <span className="badge badge-outline badge-sm">
+                                {promo.usos_maximos - promo.usos_actuales} usos restantes
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Columna derecha: código de descuento */}
+                        <div className="shrink-0 text-center">
+                          <p className="text-xs text-primary-content/60 mb-1 uppercase tracking-widest">
+                            Tu código
+                          </p>
+                          <div className="bg-white/15 border border-white/30 rounded-xl px-6 py-3">
+                            <span className="text-2xl font-mono font-bold tracking-widest">
+                              {promo.codigo}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Botones de navegación */}
+                    <div className="absolute left-3 right-3 top-1/2 flex -translate-y-1/2 justify-between pointer-events-none">
+                      <a
+                        href={`#promo-slide-${prevIdx}`}
+                        className="btn btn-circle btn-sm bg-white/20 border-white/30 text-white hover:bg-white/40 pointer-events-auto"
+                        aria-label="Promoción anterior"
+                      >
+                        ❮
+                      </a>
+                      <a
+                        href={`#promo-slide-${nextIdx}`}
+                        className="btn btn-circle btn-sm bg-white/20 border-white/30 text-white hover:bg-white/40 pointer-events-auto"
+                        aria-label="Siguiente promoción"
+                      >
+                        ❯
+                      </a>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Indicadores de posición */}
+            {promociones.length > 1 && (
+              <div className="flex justify-center gap-2 mt-4">
+                {promociones.map((_, i) => (
+                  <a
+                    key={i}
+                    href={`#promo-slide-${i}`}
+                    className="btn btn-xs btn-circle btn-ghost opacity-40 hover:opacity-100"
+                    aria-label={`Ir a promoción ${i + 1}`}
+                  >
+                    {i + 1}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* ===== CTA FINAL ===== */}      <div className="hero py-20 bg-primary text-white">
         <div className="hero-content text-center">
           <div className="max-w-2xl">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">

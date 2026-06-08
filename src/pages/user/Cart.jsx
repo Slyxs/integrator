@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { FiMinus, FiPlus, FiTrash2, FiShoppingCart } from 'react-icons/fi';
-import { useCart } from '../../context/CartContext';
-import { useAuth } from '../../context/AuthContext';
-import { createSale } from '../../services/api';
 import toast from 'react-hot-toast';
+import { FiMinus, FiPlus, FiShoppingCart, FiTag, FiTrash2, FiX } from 'react-icons/fi';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { useCart } from '../../context/CartContext';
+import { createSale, usarPromocion, validateCoupon } from '../../services/api';
 
 const formatCurrency = (amount) => `S/ ${amount.toFixed(2)}`;
+const roundMoney = (amount) => Number(amount.toFixed(2));
 
 const initialCardForm = {
   holderName: '',
@@ -48,9 +49,67 @@ const Cart = () => {
   // Desactiva el botón de pagar mientras se procesa la venta en el servidor
   const [processing, setProcessing] = useState(false);
 
-  // Cálculo del IGV (18%) y total final sobre el subtotal del carrito
-  const igv = total * 0.18;
-  const totalConIgv = total + igv;
+  // ---- Descuentos / Cupones ----
+  // codigoInput: lo que el usuario escribe en el campo de código
+  // promoAplicada: objeto promo devuelto por la API si el código es válido
+  // promoError: mensaje de error de validación
+  // validandoPromo: bloquea el botón "Aplicar" mientras se consulta la API
+  const [codigoInput, setCodigoInput] = useState('');
+  const [promoAplicada, setPromoAplicada] = useState(null);
+  const [promoError, setPromoError] = useState('');
+  const [validandoPromo, setValidandoPromo] = useState(false);
+
+  // Descuento calculado sobre el subtotal del carrito (sin IGV).
+  // Si no hay promo aplicada, descuento = 0.
+  const descuento = promoAplicada
+    ? promoAplicada.tipo === 'porcentaje'
+      ? total * (promoAplicada.valor / 100)
+      : Math.min(promoAplicada.valor, total) // no puede superar el subtotal
+    : 0;
+
+  // Cálculo del IGV (18%) y total final sobre el subtotal ya descontado
+  const igv = (total - descuento) * 0.18;
+  const totalConIgv = (total - descuento) + igv;
+
+  // Valida el código de descuento contra la API y, si es válido, lo aplica.
+  // También verifica localmente que se cumpla el mínimo de compra.
+  const handleAplicarCodigo = async () => {
+    const codigo = codigoInput.trim().toUpperCase();
+    if (!codigo) return;
+
+    setPromoError('');
+    setValidandoPromo(true);
+    try {
+      const promo = await validateCoupon(codigo);
+
+      // Verificar que se cumple el mínimo de compra (subtotal sin IGV)
+      if (promo.minimo_compra > 0 && total < promo.minimo_compra) {
+        setPromoError(
+          `Este código requiere una compra mínima de S/ ${promo.minimo_compra.toFixed(2)}.`
+        );
+        setValidandoPromo(false);
+        return;
+      }
+
+      setPromoAplicada(promo);
+      toast.success(`Código "${promo.codigo}" aplicado — ${
+        promo.tipo === 'porcentaje'
+          ? `${promo.valor}% de descuento`
+          : `S/ ${promo.valor.toFixed(2)} de descuento`
+      }`);
+    } catch (err) {
+      setPromoError(err.message || 'Código inválido o expirado');
+    } finally {
+      setValidandoPromo(false);
+    }
+  };
+
+  // Quita la promo aplicada y limpia el input
+  const handleQuitarPromo = () => {
+    setPromoAplicada(null);
+    setCodigoInput('');
+    setPromoError('');
+  };
 
   // Cambia el método de pago y abre el modal de tarjeta si el usuario elige esa opción
   const handleMetodoPagoChange = (event) => {
@@ -132,18 +191,38 @@ const Cart = () => {
 
     setProcessing(true); // bloquea el botón para evitar envíos duplicados
     try {
-      const sale = await createSale({
-        clienteNombre: clienteNombre || 'Consumidor Final',
-        clienteDocumento,
-        metodoPago,
-        detallePago: metodoPago === 'tarjeta'
+      const detallePago = {
+        ...(metodoPago === 'tarjeta'
           ? {
             titular: cardDetails.holderName,
             ultimos4: cardDetails.last4,
             vencimiento: cardDetails.expiry,
             cuotas: cardDetails.installments,
           }
+          : {}),
+        resumen: {
+          subtotal: roundMoney(total),
+          descuento: roundMoney(descuento),
+          subtotalConDescuento: roundMoney(total - descuento),
+          igv: roundMoney(igv),
+          total: roundMoney(totalConIgv),
+        },
+        promocion: promoAplicada
+          ? {
+            id: promoAplicada.id,
+            codigo: promoAplicada.codigo,
+            titulo: promoAplicada.titulo,
+            tipo: promoAplicada.tipo,
+            valor: promoAplicada.valor,
+          }
           : null,
+      };
+
+      const sale = await createSale({
+        clienteNombre: clienteNombre || 'Consumidor Final',
+        clienteDocumento,
+        metodoPago,
+        detallePago,
         usuarioId: user.id,
         usuarioNombre: user.nombre,
         items: items.map(item => ({
@@ -152,10 +231,14 @@ const Cart = () => {
           cantidad: item.cantidad,
           precioUnitario: item.precio,
         })),
-        total: totalConIgv,
+        total: roundMoney(totalConIgv),
       });
       clearCart();
       toast.success('¡Compra realizada con éxito!');
+      // Registrar uso del cupón si había uno aplicado
+      if (promoAplicada) {
+        usarPromocion(promoAplicada.id).catch(() => {});
+      }
       navigate(`/recibo/${sale.id}`);
     } catch {
       toast.error('Error al procesar la venta');
@@ -258,6 +341,12 @@ const Cart = () => {
                   <div className="stat-title">Subtotal</div>
                   <div className="stat-value text-lg">{formatCurrency(total)}</div>
                 </div>
+                {descuento > 0 && (
+                  <div className="stat px-4 py-3 border-t border-base-300">
+                    <div className="stat-title text-success">Descuento ({promoAplicada.codigo})</div>
+                    <div className="stat-value text-lg text-success">− {formatCurrency(descuento)}</div>
+                  </div>
+                )}
                 <div className="stat px-4 py-3 border-t border-base-300">
                   <div className="stat-title">IGV (18%)</div>
                   <div className="stat-value text-lg">{formatCurrency(igv)}</div>
@@ -267,6 +356,53 @@ const Cart = () => {
                   <div className="stat-value text-primary text-2xl">{formatCurrency(totalConIgv)}</div>
                 </div>
               </div>
+
+              {/* ---- Código de descuento ---- */}
+              {!promoAplicada ? (
+                <div className="space-y-1">
+                  <label className="label text-xs text-base-content/60">
+                    <FiTag size={13} className="mr-1 inline" />
+                    ¿Tienes un código de descuento?
+                  </label>
+                  <div className="join w-full">
+                    <input
+                      type="text"
+                      value={codigoInput}
+                      onChange={e => { setCodigoInput(e.target.value.toUpperCase()); setPromoError(''); }}
+                      onKeyDown={e => e.key === 'Enter' && handleAplicarCodigo()}
+                      placeholder="CÓDIGO"
+                      className="input input-bordered input-sm join-item flex-1 font-mono tracking-widest uppercase"
+                      maxLength={30}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAplicarCodigo}
+                      disabled={validandoPromo || !codigoInput.trim()}
+                      className="btn btn-sm btn-primary join-item"
+                    >
+                      {validandoPromo ? <span className="loading loading-spinner loading-xs" /> : 'Aplicar'}
+                    </button>
+                  </div>
+                  {promoError && (
+                    <p className="text-error text-xs mt-1">{promoError}</p>
+                  )}
+                </div>
+              ) : (
+                <div className="alert alert-success py-2 px-3">
+                  <FiTag size={15} />
+                  <span className="text-xs flex-1">
+                    <strong>{promoAplicada.codigo}</strong> — {promoAplicada.titulo}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleQuitarPromo}
+                    className="btn btn-ghost btn-xs btn-circle"
+                    aria-label="Quitar código de descuento"
+                  >
+                    <FiX size={14} />
+                  </button>
+                </div>
+              )}
 
               {!showCheckout ? (
                 <button
