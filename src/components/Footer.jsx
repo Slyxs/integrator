@@ -66,6 +66,12 @@ const Footer = () => (
         <Link to="/contacto" className="link link-hover text-gray-300 hover:text-white">
           Contacto
         </Link>
+        <Link to="/asistente" className="link link-hover text-gray-300 hover:text-white">
+          Asistente IA
+        </Link>
+        <Link to="/reclamaciones" className="link link-hover text-gray-300 hover:text-white">
+          Libro de Reclamaciones
+        </Link>
         <Link to="/login" className="link link-hover text-gray-300 hover:text-white">
           Iniciar Sesión
         </Link>

@@ -87,3 +87,22 @@ function jsonError($message, $code = 400) {
 function getInput() {
     return json_decode(file_get_contents('php://input'), true) ?? [];
 }
+
+// ============================================================
+// --- Configuración del Chatbot (DeepSeek) ---
+// ============================================================
+// El endpoint chatbot.php usa la API de DeepSeek (compatible con OpenAI).
+// Para activarlo, coloca tu clave de API aquí o define la variable de
+// entorno DEEPSEEK_API_KEY en el servidor. Sin una clave válida el
+// chatbot responderá con un mensaje indicando que no está configurado.
+//   1. Crea una cuenta en https://platform.deepseek.com
+//   2. Genera una API key y pégala en DEEPSEEK_API_KEY (o usa la variable de entorno)
+if (!defined('DEEPSEEK_API_KEY')) {
+    define('DEEPSEEK_API_KEY', getenv('DEEPSEEK_API_KEY') ?: 'sk-ebd31f382c2242a79b94f0b26892f2b9');
+}
+if (!defined('DEEPSEEK_API_URL')) {
+    define('DEEPSEEK_API_URL', 'https://api.deepseek.com/chat/completions');
+}
+if (!defined('DEEPSEEK_MODEL')) {
+    define('DEEPSEEK_MODEL', 'deepseek-chat');
+}

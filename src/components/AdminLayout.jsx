@@ -1,6 +1,11 @@
 import {
     BarChart3,
+    BookText,
+    CalendarCheck,
+    ClipboardCheck,
     Coffee,
+    Coins,
+    Database,
     House,
     LayoutDashboard,
     LogOut,
@@ -10,7 +15,10 @@ import {
     ReceiptText,
     Tag,
     TicketPercent,
+    Truck,
+    UserCog,
     Users,
+    Wrench,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
@@ -26,6 +34,14 @@ const links = [
   // DONE: termina enlace de reportes en el menú administrativo
   { to: '/admin/categorias', label: 'Categorías', icon: Tag },
   { to: '/admin/promociones', label: 'Promociones', icon: TicketPercent },
+  { to: '/admin/proveedores', label: 'Proveedores', icon: Truck },
+  { to: '/admin/trabajadores', label: 'Trabajadores', icon: UserCog },
+  { to: '/admin/asistencia', label: 'Asistencia', icon: CalendarCheck },
+  { to: '/admin/bonos', label: 'Bonos', icon: Coins },
+  { to: '/admin/maquinaria', label: 'Maquinaria', icon: Wrench },
+  { to: '/admin/calidad', label: 'Control de Calidad', icon: ClipboardCheck },
+  { to: '/admin/reclamaciones', label: 'Reclamaciones', icon: BookText },
+  { to: '/admin/respaldo', label: 'Respaldo', icon: Database },
 ];
 
 const AdminLayout = () => {

@@ -79,6 +79,16 @@ const Navbar = ({ drawerOpen = false, onToggleDrawer = () => {} }) => {
                 Contacto
               </NavLink>
             </li>
+            <li>
+              <NavLink
+                to="/asistente"
+                className={({ isActive }) =>
+                  isActive ? 'font-semibold text-primary bg-primary/10 rounded-lg' : 'font-medium'
+                }
+              >
+                Asistente IA
+              </NavLink>
+            </li>
           </ul>
         </div>
 

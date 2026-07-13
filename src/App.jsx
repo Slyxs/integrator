@@ -1,4 +1,4 @@
-import { Coffee, LogOut, Mail, Settings, ShoppingCart, User, UserPlus, UtensilsCrossed } from 'lucide-react';
+import { Coffee, LogOut, Mail, MessageCircle, Settings, ShoppingCart, Sparkles, User, UserPlus, UtensilsCrossed } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { BrowserRouter, Link, Navigate, NavLink, Outlet, Route, Routes, useLocation } from 'react-router-dom';
@@ -8,17 +8,27 @@ import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider, useCart } from './context/CartContext';
+import Chatbot from './pages/Chatbot';
+import ComplaintsBook from './pages/ComplaintsBook';
 import Contact from './pages/Contact';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Attendance from './pages/admin/Attendance';
+import Backup from './pages/admin/Backup';
+import Bonuses from './pages/admin/Bonuses';
 import Categories from './pages/admin/Categories';
 import Clients from './pages/admin/Clients';
+import Complaints from './pages/admin/Complaints';
 import Dashboard from './pages/admin/Dashboard';
+import Machinery from './pages/admin/Machinery';
 import Products from './pages/admin/Products';
 import Promotions from './pages/admin/Promotions';
+import QualityControl from './pages/admin/QualityControl';
 import Reports from './pages/admin/Reports';
 import Sales from './pages/admin/Sales';
+import Suppliers from './pages/admin/Suppliers';
+import Workers from './pages/admin/Workers';
 import Cart from './pages/user/Cart';
 import Menu from './pages/user/Menu';
 import Profile from './pages/user/Profile';
@@ -59,6 +69,18 @@ const PublicSidebar = ({ onNavigate }) => {
         <NavLink to="/contacto" className={linkClass} onClick={onNavigate}>
           <Mail size={18} />
           <span>Contacto</span>
+        </NavLink>
+      </li>
+      <li>
+        <NavLink to="/asistente" className={linkClass} onClick={onNavigate}>
+          <Sparkles size={18} />
+          <span>Asistente IA</span>
+        </NavLink>
+      </li>
+      <li>
+        <NavLink to="/reclamaciones" className={linkClass} onClick={onNavigate}>
+          <MessageCircle size={18} />
+          <span>Libro de Reclamaciones</span>
         </NavLink>
       </li>
       {user && !isAdmin && (
@@ -172,6 +194,8 @@ function App() {
               <Route path="/registro" element={<Register />} />
               <Route path="/menu" element={<Menu />} />
               <Route path="/contacto" element={<Contact />} />
+              <Route path="/reclamaciones" element={<ComplaintsBook />} />
+              <Route path="/asistente" element={<Chatbot />} />
 
               <Route element={<ProtectedRoute />}>
                 <Route path="/carrito" element={<Cart />} />
@@ -192,6 +216,14 @@ function App() {
                 {/* DONE: termina ruta de reportes del administrador */}
                 <Route path="categorias" element={<Categories />} />
                 <Route path="promociones" element={<Promotions />} />
+                <Route path="proveedores" element={<Suppliers />} />
+                <Route path="trabajadores" element={<Workers />} />
+                <Route path="asistencia" element={<Attendance />} />
+                <Route path="bonos" element={<Bonuses />} />
+                <Route path="maquinaria" element={<Machinery />} />
+                <Route path="calidad" element={<QualityControl />} />
+                <Route path="reclamaciones" element={<Complaints />} />
+                <Route path="respaldo" element={<Backup />} />
               </Route>
             </Route>
 

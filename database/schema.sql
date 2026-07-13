@@ -324,3 +324,214 @@ VALUES
     'monto_fijo', 10.00, 40.00, 75,
     CURDATE(), DATE_ADD(CURDATE(), INTERVAL 45 DAY)
   );
+
+-- ============================================================
+-- TABLA DE PROVEEDORES (gestión de proveedores)
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS proveedores (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  nombre VARCHAR(120) NOT NULL,
+  ruc VARCHAR(20) UNIQUE,
+  contacto VARCHAR(120),                 -- persona de contacto
+  telefono VARCHAR(20),
+  email VARCHAR(100),
+  direccion TEXT,
+  suministro VARCHAR(120),               -- qué provee (café, insumos, etc.)
+  estado BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+INSERT INTO proveedores (nombre, ruc, contacto, telefono, email, direccion, suministro) VALUES
+  ('Cafetalera Andina S.A.C.',  '20512345678', 'Rosa Quispe',   '999-100-200', 'ventas@cafetaleraandina.pe', 'Jr. Cusco 450, Lima',        'Granos de café verde'),
+  ('Lácteos del Valle E.I.R.L.','20487654321', 'Jorge Medina',  '999-300-400', 'contacto@lacteosdelvalle.pe','Av. La Molina 1200, Lima',   'Leche y derivados'),
+  ('Insumos Pastelería Perú',   '20456789012', 'Lucía Fernández','999-500-600', 'pedidos@insumospasteleria.pe','Calle Los Hornos 88, Lima', 'Harinas y repostería'),
+  ('Empaques EcoPack S.A.',     '20423456789', 'Marco Ríos',    '999-700-800', 'ventas@ecopack.pe',         'Av. Industrial 340, Callao', 'Vasos y empaques'),
+  ('Distribuidora Sabor Total', '20434567890', 'Karla Ponce',   '999-900-100', 'karla@sabortotal.pe',       'Jr. Comercio 210, Lima',     'Siropes y saborizantes');
+
+-- ============================================================
+-- TABLA DE TRABAJADORES (mantenimiento de personal)
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS trabajadores (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  nombre VARCHAR(100) NOT NULL,
+  apellido VARCHAR(100) NOT NULL,
+  documento VARCHAR(20) UNIQUE,
+  cargo VARCHAR(80) NOT NULL,
+  telefono VARCHAR(20),
+  email VARCHAR(100),
+  salario DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  fecha_ingreso DATE,
+  turno ENUM('mañana', 'tarde', 'noche') NOT NULL DEFAULT 'mañana',
+  estado BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+INSERT INTO trabajadores (nombre, apellido, documento, cargo, telefono, email, salario, fecha_ingreso, turno) VALUES
+  ('Lucía',   'Mendoza',  '45678912', 'Barista',            '988-111-222', 'lucia.mendoza@juanvaldez.com',  1500.00, DATE_SUB(CURDATE(), INTERVAL 400 DAY), 'mañana'),
+  ('Andrés',  'Castillo', '45123789', 'Cajero',             '988-333-444', 'andres.castillo@juanvaldez.com',1400.00, DATE_SUB(CURDATE(), INTERVAL 300 DAY), 'tarde'),
+  ('Fiorella','Ramos',    '46987321', 'Supervisora',        '988-555-666', 'fiorella.ramos@juanvaldez.com', 2200.00, DATE_SUB(CURDATE(), INTERVAL 600 DAY), 'mañana'),
+  ('Kevin',   'Huamán',   '47852136', 'Barista',            '988-777-888', 'kevin.huaman@juanvaldez.com',   1500.00, DATE_SUB(CURDATE(), INTERVAL 150 DAY), 'noche'),
+  ('Diana',   'Vega',     '48963217', 'Panadera',           '988-999-000', 'diana.vega@juanvaldez.com',     1600.00, DATE_SUB(CURDATE(), INTERVAL 220 DAY), 'mañana'),
+  ('Renzo',   'Flores',   '44785296', 'Encargado de Almacén','988-121-343', 'renzo.flores@juanvaldez.com',  1800.00, DATE_SUB(CURDATE(), INTERVAL 90 DAY),  'tarde');
+
+-- ============================================================
+-- TABLA DE MAQUINARIA (mantenimiento de equipos)
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS maquinaria (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  nombre VARCHAR(100) NOT NULL,
+  codigo VARCHAR(40) UNIQUE,
+  marca VARCHAR(80),
+  modelo VARCHAR(80),
+  ubicacion VARCHAR(100),
+  fecha_adquisicion DATE,
+  ultimo_mantenimiento DATE,
+  proximo_mantenimiento DATE,
+  estado_operativo ENUM('operativa', 'mantenimiento', 'averiada', 'baja') NOT NULL DEFAULT 'operativa',
+  observaciones TEXT,
+  estado BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+INSERT INTO maquinaria (nombre, codigo, marca, modelo, ubicacion, fecha_adquisicion, ultimo_mantenimiento, proximo_mantenimiento, estado_operativo, observaciones) VALUES
+  ('Máquina de Espresso',   'MAQ-001', 'La Marzocco', 'Linea PB',   'Barra principal', DATE_SUB(CURDATE(), INTERVAL 800 DAY), DATE_SUB(CURDATE(), INTERVAL 40 DAY), DATE_ADD(CURDATE(), INTERVAL 50 DAY), 'operativa',     'Calibración de presión al día'),
+  ('Molino de Café',        'MAQ-002', 'Mahlkönig',   'E65S',       'Barra principal', DATE_SUB(CURDATE(), INTERVAL 500 DAY), DATE_SUB(CURDATE(), INTERVAL 20 DAY), DATE_ADD(CURDATE(), INTERVAL 70 DAY), 'operativa',     'Muelas revisadas'),
+  ('Refrigeradora Industrial','MAQ-003','Coldex',    'CI-450',     'Cocina',          DATE_SUB(CURDATE(), INTERVAL 1200 DAY),DATE_SUB(CURDATE(), INTERVAL 90 DAY), DATE_SUB(CURDATE(), INTERVAL 5 DAY),  'mantenimiento', 'Requiere recarga de gas refrigerante'),
+  ('Horno de Panadería',    'MAQ-004', 'Nova',        'MaxiPan 10', 'Panadería',       DATE_SUB(CURDATE(), INTERVAL 950 DAY), DATE_SUB(CURDATE(), INTERVAL 60 DAY), DATE_ADD(CURDATE(), INTERVAL 30 DAY), 'operativa',     'Funcionamiento normal'),
+  ('Licuadora Industrial',  'MAQ-005', 'Vitamix',     'XL',         'Barra de fríos',  DATE_SUB(CURDATE(), INTERVAL 300 DAY), DATE_SUB(CURDATE(), INTERVAL 200 DAY),DATE_SUB(CURDATE(), INTERVAL 20 DAY), 'averiada',      'Motor con ruido anormal, fuera de servicio');
+
+-- ============================================================
+-- TABLA DE CONTROL DE CALIDAD (inspecciones)
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS control_calidad (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  producto_id INT,
+  producto_nombre VARCHAR(100),
+  lote VARCHAR(40),
+  fecha_inspeccion DATE NOT NULL,
+  inspector VARCHAR(100),
+  temperatura DECIMAL(5,2),
+  puntuacion INT NOT NULL DEFAULT 0,            -- 0 a 100
+  resultado ENUM('aprobado', 'observado', 'rechazado') NOT NULL DEFAULT 'aprobado',
+  observaciones TEXT,
+  estado BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE SET NULL
+);
+
+INSERT INTO control_calidad (producto_id, producto_nombre, lote, fecha_inspeccion, inspector, temperatura, puntuacion, resultado, observaciones) VALUES
+  (2,  'Cappuccino',        'LT-2401', DATE_SUB(CURDATE(), INTERVAL 1 DAY),  'Fiorella Ramos', 68.50, 95, 'aprobado',  'Espuma y temperatura óptimas'),
+  (7,  'Cold Brew',         'LT-2402', DATE_SUB(CURDATE(), INTERVAL 2 DAY),  'Fiorella Ramos',  4.00, 90, 'aprobado',  'Extracción correcta, buen aroma'),
+  (10, 'Croissant',         'LT-2403', DATE_SUB(CURDATE(), INTERVAL 3 DAY),  'Diana Vega',     22.00, 78, 'observado', 'Ligero exceso de horneado en algunos'),
+  (13, 'Cheesecake',        'LT-2404', DATE_SUB(CURDATE(), INTERVAL 4 DAY),  'Diana Vega',      5.50, 88, 'aprobado',  'Textura y sabor conformes'),
+  (6,  'Frappé de Café',    'LT-2405', DATE_SUB(CURDATE(), INTERVAL 6 DAY),  'Fiorella Ramos',  3.00, 60, 'rechazado', 'Consistencia muy líquida, se rehace el lote'),
+  (17, 'Café Orgánico',     'LT-2406', DATE_SUB(CURDATE(), INTERVAL 8 DAY),  'Fiorella Ramos', 70.00, 97, 'aprobado',  'Notas dulces bien definidas');
+
+-- ============================================================
+-- TABLA DE LIBRO DE RECLAMACIONES
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS reclamaciones (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  codigo VARCHAR(20) UNIQUE NOT NULL,          -- Ej: REC-000001
+  tipo ENUM('reclamo', 'queja') NOT NULL DEFAULT 'reclamo',
+  nombre VARCHAR(100) NOT NULL,
+  apellido VARCHAR(100) NOT NULL,
+  tipo_documento ENUM('DNI', 'CE', 'pasaporte', 'RUC') NOT NULL DEFAULT 'DNI',
+  documento VARCHAR(20),
+  email VARCHAR(100),
+  telefono VARCHAR(20),
+  direccion TEXT,
+  menor_edad BOOLEAN NOT NULL DEFAULT FALSE,
+  tipo_bien ENUM('producto', 'servicio') NOT NULL DEFAULT 'producto',
+  monto_reclamado DECIMAL(10,2),
+  descripcion_bien TEXT,
+  detalle TEXT NOT NULL,                        -- detalle de la reclamación
+  pedido TEXT,                                  -- pedido concreto del consumidor
+  estado ENUM('pendiente', 'en_proceso', 'resuelto', 'rechazado') NOT NULL DEFAULT 'pendiente',
+  respuesta TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+INSERT INTO reclamaciones (codigo, tipo, nombre, apellido, tipo_documento, documento, email, telefono, tipo_bien, monto_reclamado, descripcion_bien, detalle, pedido, estado) VALUES
+  ('REC-000001', 'reclamo', 'Carlos', 'García', 'DNI', '12345678', 'carlos@email.com', '999-111-222', 'producto', 15.00, 'Frappé de Café', 'El producto llegó con menos cantidad de la ofrecida.', 'Solicito reposición o devolución del monto.', 'resuelto'),
+  ('REC-000002', 'queja',   'María',  'López',  'DNI', '87654321', 'maria@email.com',  '999-333-444', 'servicio', NULL,  'Atención en caja',  'La espera en caja fue excesiva durante la hora punta.', 'Solicito mejorar los tiempos de atención.', 'pendiente'),
+  ('REC-000003', 'reclamo', 'Pedro',  'Martínez','DNI','11223344', 'pedro@email.com',  '999-555-666', 'producto', 14.00, 'Latte', 'La bebida estaba fría al momento de servirla.', 'Solicito la reposición de mi pedido.', 'en_proceso');
+
+-- ============================================================
+-- TABLA DE HISTORIAL DE RESPALDOS
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS respaldos (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  archivo VARCHAR(120) NOT NULL,
+  formato ENUM('json', 'sql') NOT NULL DEFAULT 'json',
+  tablas INT NOT NULL DEFAULT 0,
+  registros INT NOT NULL DEFAULT 0,
+  usuario VARCHAR(100),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ============================================================
+-- TABLA DE ASISTENCIA DE EMPLEADOS
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS asistencias (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  trabajador_id INT NOT NULL,
+  fecha DATE NOT NULL,
+  hora_entrada TIME,
+  hora_salida TIME,
+  estado ENUM('presente', 'tardanza', 'falta', 'justificada') NOT NULL DEFAULT 'presente',
+  observaciones TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (trabajador_id) REFERENCES trabajadores(id) ON DELETE CASCADE,
+  UNIQUE KEY uq_asistencia_dia (trabajador_id, fecha)
+);
+
+INSERT INTO asistencias (trabajador_id, fecha, hora_entrada, hora_salida, estado, observaciones) VALUES
+  (1, CURDATE(),                            '07:55:00', '16:05:00', 'presente',    'Jornada completa'),
+  (2, CURDATE(),                            '14:20:00', '22:00:00', 'tardanza',    'Llegó 20 minutos tarde'),
+  (3, CURDATE(),                            '07:50:00', '16:00:00', 'presente',    NULL),
+  (4, CURDATE(),                            NULL,       NULL,       'falta',       'No se presentó'),
+  (5, CURDATE(),                            '07:58:00', '16:02:00', 'presente',    NULL),
+  (6, CURDATE(),                            '14:00:00', '22:10:00', 'presente',    NULL),
+  (1, DATE_SUB(CURDATE(), INTERVAL 1 DAY),  '08:00:00', '16:00:00', 'presente',    NULL),
+  (2, DATE_SUB(CURDATE(), INTERVAL 1 DAY),  '14:00:00', '22:00:00', 'presente',    NULL),
+  (3, DATE_SUB(CURDATE(), INTERVAL 1 DAY),  NULL,       NULL,       'justificada', 'Permiso médico'),
+  (4, DATE_SUB(CURDATE(), INTERVAL 1 DAY),  '22:05:00', '06:00:00', 'presente',    'Turno noche'),
+  (5, DATE_SUB(CURDATE(), INTERVAL 1 DAY),  '08:10:00', '16:00:00', 'tardanza',    'Tráfico'),
+  (6, DATE_SUB(CURDATE(), INTERVAL 2 DAY),  '14:00:00', '22:00:00', 'presente',    NULL);
+
+-- ============================================================
+-- TABLA DE BONOS DE EMPLEADOS
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS bonos (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  trabajador_id INT NOT NULL,
+  tipo ENUM('productividad', 'puntualidad', 'ventas', 'antiguedad', 'otro') NOT NULL DEFAULT 'productividad',
+  concepto VARCHAR(150),
+  monto DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  fecha DATE NOT NULL,
+  estado ENUM('pendiente', 'pagado') NOT NULL DEFAULT 'pendiente',
+  observaciones TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (trabajador_id) REFERENCES trabajadores(id) ON DELETE CASCADE
+);
+
+INSERT INTO bonos (trabajador_id, tipo, concepto, monto, fecha, estado, observaciones) VALUES
+  (1, 'productividad', 'Meta de ventas del mes superada',   250.00, DATE_SUB(CURDATE(), INTERVAL 5 DAY),  'pagado',    'Excelente desempeño en barra'),
+  (3, 'antiguedad',    'Bono por 2 años en la empresa',      300.00, DATE_SUB(CURDATE(), INTERVAL 10 DAY), 'pagado',    NULL),
+  (2, 'puntualidad',   'Asistencia perfecta del mes',        150.00, DATE_SUB(CURDATE(), INTERVAL 3 DAY),  'pendiente', NULL),
+  (5, 'productividad', 'Alta rotación de productos horneados',200.00, DATE_SUB(CURDATE(), INTERVAL 2 DAY),  'pendiente', 'Panadería'),
+  (4, 'ventas',        'Comisión por venta de combos',       120.00, DATE_SUB(CURDATE(), INTERVAL 1 DAY),  'pendiente', NULL),
+  (6, 'otro',          'Reconocimiento por apoyo en almacén', 100.00, DATE_SUB(CURDATE(), INTERVAL 8 DAY),  'pagado',    NULL);

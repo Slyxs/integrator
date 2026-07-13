@@ -213,3 +213,111 @@ export const updatePromocion = (id, data) =>
 
 export const deletePromocion = (id) =>
   request('/promociones.php', { method: 'DELETE', body: JSON.stringify({ id }) });
+
+// ===================== PROVEEDORES =====================
+// CRUD de proveedores del sistema (panel de administración).
+export const getProveedores = () => request('/proveedores.php');
+
+export const createProveedor = (data) =>
+  request('/proveedores.php', { method: 'POST', body: JSON.stringify(data) });
+
+export const updateProveedor = (id, data) =>
+  request('/proveedores.php', { method: 'PUT', body: JSON.stringify({ id, ...data }) });
+
+export const deleteProveedor = (id) =>
+  request('/proveedores.php', { method: 'DELETE', body: JSON.stringify({ id }) });
+
+// ===================== TRABAJADORES =====================
+// Mantenimiento del personal de la cafetería.
+export const getTrabajadores = () => request('/trabajadores.php');
+
+export const createTrabajador = (data) =>
+  request('/trabajadores.php', { method: 'POST', body: JSON.stringify(data) });
+
+export const updateTrabajador = (id, data) =>
+  request('/trabajadores.php', { method: 'PUT', body: JSON.stringify({ id, ...data }) });
+
+export const deleteTrabajador = (id) =>
+  request('/trabajadores.php', { method: 'DELETE', body: JSON.stringify({ id }) });
+
+// ===================== MAQUINARIA =====================
+// Mantenimiento de equipos y maquinaria.
+export const getMaquinaria = () => request('/maquinaria.php');
+
+export const createMaquina = (data) =>
+  request('/maquinaria.php', { method: 'POST', body: JSON.stringify(data) });
+
+export const updateMaquina = (id, data) =>
+  request('/maquinaria.php', { method: 'PUT', body: JSON.stringify({ id, ...data }) });
+
+export const deleteMaquina = (id) =>
+  request('/maquinaria.php', { method: 'DELETE', body: JSON.stringify({ id }) });
+
+// ===================== CONTROL DE CALIDAD =====================
+// Registro de inspecciones de control de calidad.
+export const getControlCalidad = () => request('/control_calidad.php');
+
+export const createInspeccion = (data) =>
+  request('/control_calidad.php', { method: 'POST', body: JSON.stringify(data) });
+
+export const updateInspeccion = (id, data) =>
+  request('/control_calidad.php', { method: 'PUT', body: JSON.stringify({ id, ...data }) });
+
+export const deleteInspeccion = (id) =>
+  request('/control_calidad.php', { method: 'DELETE', body: JSON.stringify({ id }) });
+
+// ===================== LIBRO DE RECLAMACIONES =====================
+// Registro público de reclamaciones y gestión administrativa.
+export const getReclamaciones = () => request('/reclamaciones.php');
+
+// Consulta pública del estado de una reclamación por su código.
+export const getReclamacionByCodigo = (codigo) =>
+  request(`/reclamaciones.php?codigo=${encodeURIComponent(codigo)}`);
+
+// Registra una nueva reclamación (formulario público). Devuelve el código generado.
+export const createReclamacion = (data) =>
+  request('/reclamaciones.php', { method: 'POST', body: JSON.stringify(data) });
+
+// Actualiza el estado y la respuesta de una reclamación (admin).
+export const updateReclamacion = (id, data) =>
+  request('/reclamaciones.php', { method: 'PUT', body: JSON.stringify({ id, ...data }) });
+
+export const deleteReclamacion = (id) =>
+  request('/reclamaciones.php', { method: 'DELETE', body: JSON.stringify({ id }) });
+
+// ===================== RESPALDO DE INFORMACIÓN =====================
+// Genera un respaldo de los datos del sistema en formato JSON o SQL.
+export const generarRespaldo = (formato = 'json', usuario = '') =>
+  request(`/respaldo.php?formato=${formato}&usuario=${encodeURIComponent(usuario)}`);
+
+// Obtiene el historial de respaldos generados.
+export const getHistorialRespaldos = () => request('/respaldo.php?historial=1');
+
+// ===================== CHATBOT (IA - DeepSeek) =====================
+// Envía la conversación al asistente virtual y devuelve su respuesta.
+export const sendChatMessage = (messages) =>
+  request('/chatbot.php', { method: 'POST', body: JSON.stringify({ messages }) });
+
+// ===================== ASISTENCIA DE EMPLEADOS =====================
+export const getAsistencias = () => request('/asistencias.php');
+
+export const createAsistencia = (data) =>
+  request('/asistencias.php', { method: 'POST', body: JSON.stringify(data) });
+
+export const updateAsistencia = (id, data) =>
+  request('/asistencias.php', { method: 'PUT', body: JSON.stringify({ id, ...data }) });
+
+export const deleteAsistencia = (id) =>
+  request('/asistencias.php', { method: 'DELETE', body: JSON.stringify({ id }) });
+
+// ===================== BONOS DE EMPLEADOS =====================
+export const getBonos = () => request('/bonos.php');
+
+export const createBono = (data) =>
+  request('/bonos.php', { method: 'POST', body: JSON.stringify(data) });
+
+export const updateBono = (id, data) =>
+  request('/bonos.php', { method: 'PUT', body: JSON.stringify({ id, ...data }) });
+
+export const deleteBono = (id) =>
+  request('/bonos.php', { method: 'DELETE', body: JSON.stringify({ id }) });
